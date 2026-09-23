@@ -6,18 +6,18 @@
     <title>ポケット要塞</title>
     <style>
         :root {
-            --bg-color: #F1F3F5;
+            --bg-color: #F8FAFC;
             --card-bg: #FFFFFF;
-            --text-primary: #212529;
-            --text-secondary: #6C757D;
-            --accent-color: #495057;
-            --accent-hover: #343A40;
-            --danger-red: #FA5252;
-            --border-color: #CED4DA;
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+            --accent-color: #0284C7;
+            --accent-hover: #0369A1;
+            --danger-red: #EF4444;
+            --border-color: #E2E8F0;
         }
 
         body {
-            background-color: var--bg-color;
+            background-color: var(--bg-color);
             color: var(--text-primary);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
@@ -75,6 +75,11 @@
             text-align: center;
         }
 
+        .lock-input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
         .lock-btn {
             background-color: var(--accent-color);
             color: #FFFFFF;
@@ -91,15 +96,6 @@
 
         .lock-btn:hover {
             background-color: var(--accent-hover);
-        }
-
-        .bio-btn {
-            background-color: #228BE6;
-            margin-top: 8px;
-        }
-
-        .bio-btn:hover {
-            background-color: #1C7ED6;
         }
 
         /* メインアプリ画面 */
@@ -127,7 +123,7 @@
         .item-row {
             display: flex;
             flex-direction: column;
-            background-color: #F8F9FA;
+            background-color: #F8FAFC;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
@@ -210,17 +206,15 @@
             <p>情報マネージャー</p>
         </header>
 
-        <!-- ロック画面 -->
+        <!-- ロック画面（完全に余計な文字を削った、ただ一つの入力欄） -->
         <div id="lock-screen">
             <h2>ロック解除</h2>
             <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                パスワードを入力してください。<br>（※ダミーパスワードならそのまま開きます）
+                パスワードを入力してください。
             </p>
             <input type="password" id="pass-input" class="lock-input" placeholder="パスワードを入力">
             <br>
-            <button class="lock-btn" onclick="tryUnlock()">パスワードで解除</button>
-            <br>
-            <button class="lock-btn bio-btn" onclick="tryBioUnlock()">🧬 生体認証で本物を解除</button>
+            <button class="lock-btn" onclick="handleUnlock()">解除する</button>
         </div>
 
         <!-- メインアプリ画面 -->
@@ -234,9 +228,9 @@
     </div>
 
     <script>
-        // パスワード設定
-        const DUMMY_PASSWORD = "dummy"; // これを入れるとダミーが開く
-        const REAL_PASSWORD = "mysecretpassword"; // 本物のパスワード
+        // パスワードの設定
+        const DUMMY_PASSWORD = "dummy";     // ダミーのパスワード（これならそのままダミー画面が開く）
+        const REAL_PASSWORD = "mysecretpassword"; // 本物のパスワード（これならパスワード一致後に生体認証へ）
 
         let realData = [
             {
@@ -265,50 +259,29 @@
             document.getElementById('app-content').style.display = 'none';
         };
 
-        // パスワードのみ（ダミー用）
-        function tryUnlock() {
+        // 解除ボタンが押されたときのスマート判定
+        function handleUnlock() {
             const inputVal = document.getElementById('pass-input').value;
             const status = document.getElementById('security-status');
 
             if (inputVal === DUMMY_PASSWORD) {
+                // ① ダミーパスワードの場合：そのままダミー画面を開く
                 currentActiveData = dummyData;
                 status.innerText = "🟢 ステータス：通常";
                 proceedUnlock();
             } else if (inputVal === REAL_PASSWORD) {
-                alert("本物のパスワードです。さらに安全のため「生体認証ボタン」をご利用ください！");
-            } else {
-                alert("パスワードが違います！");
-            }
-        }
-
-        // 本物解除（パスワード＋生体認証シミュレート）
-        async function tryBioUnlock() {
-            const inputVal = document.getElementById('pass-input').value;
-            if (inputVal !== REAL_PASSWORD) {
-                alert("本物のパスワードが正しく入力されていません！");
-                return;
-            }
-
-            // スマホなどの生体認証（Web Authentication API）を呼び出すシミュレーション
-            try {
-                // ブラウザの生体認証機能が使える場合の処理（非対応環境の場合は確認ダイアログで代用）
-                if (window.PublicKeyCredential) {
-                    // 簡単のため、今回は確認ダイアログで生体認証（指紋/顔）の成功を模倣します
-                    const confirmed = confirm("【生体認証】端末の指紋認証または顔認証を行いますか？");
-                    if (confirmed) {
-                        currentActiveData = realData;
-                        document.getElementById('security-status').innerText = "🔒 ステータス：要塞防衛中（完全保護）";
-                        proceedUnlock();
-                    } else {
-                        alert("生体認証がキャンセルされました。");
-                    }
-                } else {
-                    alert("お使いの環境では生体認証がサポートされていないため、パスワードのみで解除します。");
+                // ② 本物のパスワードの場合：その後に生体認証のステップを挟む
+                const bioConfirmed = confirm("【端末のセキュリティ】生体認証（指紋・顔認証）を行います。");
+                if (bioConfirmed) {
                     currentActiveData = realData;
+                    status.innerText = "🔒 ステータス：要塞防衛中（完全保護）";
                     proceedUnlock();
+                } else {
+                    alert("生体認証がキャンセルされました。");
                 }
-            } catch (err) {
-                alert("認証エラーが発生しました。");
+            } else {
+                // ③ どちらも違う場合
+                alert("パスワードが違います！");
             }
         }
 
