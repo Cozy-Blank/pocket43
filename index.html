@@ -6,14 +6,14 @@
     <title>ポケット要塞</title>
     <style>
         :root {
-            --bg-color: #F8FAFC;
+            --bg-color: #F0FDF4;
             --card-bg: #FFFFFF;
-            --text-primary: #0F172A;
-            --text-secondary: #64748B;
-            --accent-color: #0284C7;
-            --accent-hover: #0369A1;
+            --text-primary: #065F46;
+            --text-secondary: #4B5563;
+            --accent-color: #10B981;
+            --accent-hover: #059669;
             --danger-red: #EF4444;
-            --border-color: #E2E8F0;
+            --border-color: #D1D5DB;
         }
 
         body {
@@ -48,39 +48,51 @@
             font-size: 0.85rem;
         }
 
-        /* ロック画面 */
-        #lock-screen {
+        /* カード共通 */
+        .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 24px;
             text-align: center;
-            margin-top: 40px;
+            margin-top: 30px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
-        #lock-screen h2 {
+        .card h2 {
             color: var(--accent-color);
             margin-top: 0;
+            font-size: 1.3rem;
         }
 
-        .lock-input {
-            width: 80%;
+        .input-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .app-input {
+            width: 100%;
             padding: 12px;
             font-size: 1rem;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            margin-top: 12px;
             box-sizing: border-box;
-            text-align: center;
         }
 
-        .lock-input:focus {
+        .app-input:focus {
             outline: none;
             border-color: var(--accent-color);
         }
 
-        .lock-btn {
+        .app-btn {
             background-color: var(--accent-color);
             color: #FFFFFF;
             border: none;
@@ -89,13 +101,24 @@
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
-            margin-top: 16px;
+            width: 100%;
             transition: background-color 0.2s;
-            width: 80%;
+            margin-top: 8px;
         }
 
-        .lock-btn:hover {
+        .app-btn:hover {
             background-color: var(--accent-hover);
+        }
+
+        /* リセットボタン（開発・テスト用） */
+        .reset-link {
+            margin-top: 20px;
+            font-size: 0.75rem;
+            color: #9CA3AF;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline;
         }
 
         /* メインアプリ画面 */
@@ -123,7 +146,7 @@
         .item-row {
             display: flex;
             flex-direction: column;
-            background-color: #F8FAFC;
+            background-color: #F9FAFB;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
@@ -132,7 +155,7 @@
 
         .item-label {
             font-size: 0.9rem;
-            color: var(--text-primary);
+            color: #1F2937;
             margin-bottom: 6px;
             font-weight: 500;
         }
@@ -141,7 +164,7 @@
             width: 100%;
             background-color: #FFFFFF;
             border: 1px solid var(--border-color);
-            color: var(--text-primary);
+            color: #1F2937;
             padding: 10px;
             border-radius: 6px;
             font-size: 0.9rem;
@@ -206,21 +229,39 @@
             <p>情報マネージャー</p>
         </header>
 
-        <!-- ロック画面（完全に余計な文字を削った、ただ一つの入力欄） -->
-        <div id="lock-screen">
-            <h2>ロック解除</h2>
-            <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                パスワードを入力してください。
+        <!-- 1. 初回セットアップ画面（ダミー＆正規パスワード登録） -->
+        <div id="setup-screen" class="card" style="display: none;">
+            <h2>初期セットアップ</h2>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;">
+                ダミー用と本物用のパスワードをそれぞれ設定してください。
             </p>
-            <input type="password" id="pass-input" class="lock-input" placeholder="パスワードを入力">
-            <br>
-            <button class="lock-btn" onclick="handleUnlock()">解除する</button>
+            <div class="input-group">
+                <label>🟢 ダミー用パスワード（そのまま開く用）</label>
+                <input type="password" id="setup-dummy" class="app-input" placeholder="例: dummy123">
+            </div>
+            <div class="input-group">
+                <label>🔒 本物用パスワード（生体認証付き）</label>
+                <input type="password" id="setup-real" class="app-input" placeholder="例: secret999">
+            </div>
+            <button class="app-btn" onclick="saveSetup()">設定を保存してはじめる</button>
         </div>
 
-        <!-- メインアプリ画面 -->
+        <!-- 2. スマート・ロック解除画面 -->
+        <div id="lock-screen" class="card" style="display: none;">
+            <h2>ロック解除</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
+                パスワードを入力してください。
+            </p>
+            <input type="password" id="pass-input" class="app-input" style="text-align: center;" placeholder="パスワードを入力">
+            <button class="app-btn" onclick="handleUnlock()" style="margin-top: 16px;">解除する</button>
+            <br>
+            <button class="reset-link" onclick="resetSetup()">⚙️ パスワードを再設定する</button>
+        </div>
+
+        <!-- 3. メインアプリ画面 -->
         <div id="app-content">
             <div class="lock-lock-bar">
-                <span id="security-status" style="color: var(--accent-color); font-size: 0.85rem;">🟢 ステータス：通常</span>
+                <span id="security-status" style="color: var(--accent-color); font-size: 0.85rem; font-weight: bold;">🟢 ステータス：通常</span>
                 <button class="relock-btn" onclick="relockApp()">🔒 ロックする</button>
             </div>
             <div id="app-categories"></div>
@@ -228,10 +269,6 @@
     </div>
 
     <script>
-        // パスワードの設定
-        const DUMMY_PASSWORD = "dummy";     // ダミーのパスワード（これならそのままダミー画面が開く）
-        const REAL_PASSWORD = "mysecretpassword"; // 本物のパスワード（これならパスワード一致後に生体認証へ）
-
         let realData = [
             {
                 title: "1. 本人確認・身分証明情報（本物要塞）",
@@ -255,22 +292,63 @@
         let currentActiveData = realData;
 
         window.onload = function() {
-            document.getElementById('lock-screen').style.display = 'block';
-            document.getElementById('app-content').style.display = 'none';
+            checkSetup();
         };
 
-        // 解除ボタンが押されたときのスマート判定
+        // 登録済みかどうかのチェック
+        function checkSetup() {
+            const savedDummy = localStorage.getItem('pocket_dummy');
+            const savedReal = localStorage.getItem('pocket_real');
+
+            if (!savedDummy || !savedReal) {
+                // 未登録ならセットアップ画面を表示
+                document.getElementById('setup-screen').style.display = 'block';
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('app-content').style.display = 'none';
+            } else {
+                // 登録済みならロック画面を表示
+                document.getElementById('setup-screen').style.display = 'none';
+                document.getElementById('lock-screen').style.display = 'block';
+                document.getElementById('app-content').style.display = 'none';
+            }
+        }
+
+        // 初期セットアップの保存
+        function saveSetup() {
+            const dummyVal = document.getElementById('setup-dummy').value.trim();
+            const realVal = document.getElementById('setup-real').value.trim();
+
+            if (!dummyVal || !realVal) {
+                alert("両方のパスワードを入力してください！");
+                return;
+            }
+
+            if (dummyVal === realVal) {
+                alert("ダミーと本物のパスワードは別のものにしてください！");
+                return;
+            }
+
+            localStorage.setItem('pocket_dummy', dummyVal);
+            localStorage.setItem('pocket_real', realVal);
+
+            alert("初期設定が完了しました！");
+            checkSetup();
+        }
+
+        // ロック解除の判定
         function handleUnlock() {
             const inputVal = document.getElementById('pass-input').value;
             const status = document.getElementById('security-status');
+            const savedDummy = localStorage.getItem('pocket_dummy');
+            const savedReal = localStorage.getItem('pocket_real');
 
-            if (inputVal === DUMMY_PASSWORD) {
-                // ① ダミーパスワードの場合：そのままダミー画面を開く
+            if (inputVal === savedDummy) {
+                // ① ダミーパスワード：そのままダミー画面へ
                 currentActiveData = dummyData;
                 status.innerText = "🟢 ステータス：通常";
                 proceedUnlock();
-            } else if (inputVal === REAL_PASSWORD) {
-                // ② 本物のパスワードの場合：その後に生体認証のステップを挟む
+            } else if (inputVal === savedReal) {
+                // ② 本物パスワード：その後に生体認証へ
                 const bioConfirmed = confirm("【端末のセキュリティ】生体認証（指紋・顔認証）を行います。");
                 if (bioConfirmed) {
                     currentActiveData = realData;
@@ -280,7 +358,6 @@
                     alert("生体認証がキャンセルされました。");
                 }
             } else {
-                // ③ どちらも違う場合
                 alert("パスワードが違います！");
             }
         }
@@ -297,6 +374,14 @@
             document.getElementById('app-content').style.display = 'none';
         }
 
+        function resetSetup() {
+            if (confirm("パスワードを再設定しますか？（現在の設定がクリアされます）")) {
+                localStorage.removeItem('pocket_dummy');
+                localStorage.removeItem('pocket_real');
+                checkSetup();
+            }
+        }
+
         function renderApp() {
             const container = document.getElementById('app-categories');
             container.innerHTML = '';
@@ -308,19 +393,19 @@
                 let itemsHtml = '';
                 category.items.forEach((item, itemIndex) => {
                     itemsHtml += `
-                        <li class="item-row">
+                        <div class="item-row">
                             <span class="item-label">${item.label}</span>
                             <input type="text" class="item-input" value="${item.value}" placeholder="入力..." onchange="updateItem(${catIndex},${itemIndex}, this.value)">
                             <div class="row-actions">
                                 <button class="delete-btn" onclick="deleteItem(${catIndex},${itemIndex})">削除</button>
                             </div>
-                        </li>
+                        </div>
                     `;
                 });
 
                 card.innerHTML = `
                     <h2>${category.title}</h2>
-                    <ul class="item-list">${itemsHtml}</ul>
+                    <div class="item-list">${itemsHtml}</div>
                     <button class="add-btn" onclick="addItem(${catIndex})">+ 項目を追加</button>
                 `;
 
