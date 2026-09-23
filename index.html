@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>偏愛ツール：ポケット要塞（オフライン防災マネージャー）</title>
+    <style>
+        :root {
+            --bg-color: #0A192F;
+            --card-bg: #112240;
+            --text-primary: #E6F1FF;
+            --text-secondary: #8892B0;
+            --accent-gold: #D4AF37;
+            --accent-gold-hover: #F3E5AB;
+            --danger-red: #FF6B6B;
+            --border-color: #233554;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        header h1 {
+            color: var(--accent-gold);
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .category-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .category-card h2 {
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 0;
+        }
+
+        .item-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .item-input {
+            flex: 1;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .item-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        .delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--danger-red);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 8px;
+            margin-left: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .delete-btn:hover {
+            opacity: 0.7;
+        }
+
+        .add-btn {
+            background-color: transparent;
+            border: 1px dashed var(--accent-gold);
+            color: var(--accent-gold);
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .add-btn:hover {
+            background-color: rgba(212, 175, 55, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>🛡️ ポケット要塞</h1>
+            <p>偏愛ツールシリーズ：オフライン防災・身分証マネージャー</p>
+        </header>
+
+        <div id="app-categories"></div>
+    </div>
+
+    <script>
+        const initialData = [
+            {
+                title: "1. 本人確認・身分証明情報",
+                items: [
+                    "マイナンバーカード情報（番号や控えのデータ）",
+                    "運転免許証またはパスポートの番号・有効期限",
+                    "健康保険証（またはマイナ保険証の登録情報）の記号・番号",
+                    "年金手帳の基礎年金番号",
+                    "住民票や戸籍の基本情報メモ"
+                ]
+            },
+            {
+                title: "2. 医療・健康・緊急連絡先",
+                items: [
+                    "家族・親族の緊急連絡先リスト（電話番号・続柄）",
+                    "かかりつけの病院名、医師の氏名、連絡先",
+                    "常備している薬の名前やアレルギー情報のメモ",
+                    "血液型および持病・既往歴の簡易メモ",
+                    "加入している医療・生命保険の証券番号と連絡先"
+                ]
+            },
+            {
+                title: "3. 住まい・ライフライン契約情報",
+                items: [
+                    "火災保険・地震保険の証券番号と保険会社の連絡先",
+                    "賃貸物件の契約情報（管理会社名、電話番号、部屋番号）",
+                    "電気・ガス・水道の契約者番号・お客様番号",
+                    "携帯電話・通信会社の契約情報と緊急時窓口",
+                    "メインで利用している銀行口座・クレジットカードの緊急停止窓口"
+                ]
+            },
+            {
+                title: "4. 避難・防災アクションプラン",
+                items: [
+                    "自治体の指定避難所・広域避難場所の名称と住所",
+                    "家族からはぐれた場合の集合場所や安否確認の取り決め内容",
+                    "自宅の防災備蓄品（水・食料・防災グッズ）のリスト",
+                    "ペットを飼っている場合の登録情報・ワクチン接種履歴",
+                    "非常持ち出し袋のチェックリストと置き場所メモ"
+                ]
+            },
+            {
+                title: "5. デジタル資産・重要アカウント管理",
+                items: [
+                    "重要アプリやパスワード管理ツールのリカバリ情報（オフライン用）",
+                    "主要なメールアドレスの復旧用電話番号・連絡先",
+                    "クラウドストレージやバックアップの保存先メモ",
+                    "緊急時に停止すべき重要サブスクリプションのリスト",
+                    "端末を紛失した際のリモートロック手順・キャリアの窓口"
+                ]
+            }
+        ];
+
+        function renderApp() {
+            const container = document.getElementById('app-categories');
+            container.innerHTML = '';
+
+            initialData.forEach((category, catIndex) => {
+                const card = document.createElement('div');
+                card.className = 'category-card';
+
+                let itemsHtml = '';
+                category.items.forEach((item, itemIndex) => {
+                    itemsHtml += `
+                        <li class="item-row">
+                            <input type="text" class="item-input" value="${item}" onchange="updateItem(${catIndex}, ${itemIndex}, this.value)">
+                            <button class="delete-btn" onclick="deleteItem(${catIndex}, ${itemIndex})">×</button>
+                        </li>
+                    `;
+                });
+
+                card.innerHTML = `
+                    <h2>${category.title}</h2>
+                    <ul class="item-list">${itemsHtml}</ul>
+                    <button class="add-btn" onclick="addItem(${catIndex})">+ 項目を追加</button>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function updateItem(catIndex, itemIndex, value) {
+            initialData[catIndex].items[itemIndex] = value;
+        }
+
+        function deleteItem(catIndex, itemIndex) {
+            initialData[catIndex].items.splice(itemIndex, 1);
+            renderApp();
+        }
+
+        function addItem(catIndex) {
+            initialData[catIndex].items.push("新しい項目を入力");
+            renderApp();
+        }
+
+        renderApp();
+    </script>
+</body>
+</html>
