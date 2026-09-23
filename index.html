@@ -48,6 +48,44 @@
             font-size: 0.85rem;
         }
 
+        /* ロック画面のスタイル */
+        #lock-screen {
+            background-color: var(--card-bg);
+            border: 1px solid var(--accent-gold);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-top: 40px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+        }
+
+        #lock-screen h2 {
+            color: var(--accent-gold);
+            margin-top: 0;
+        }
+
+        .lock-btn {
+            background-color: var(--accent-gold);
+            color: var(--bg-color);
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .lock-btn:hover {
+            background-color: var(--accent-gold-hover);
+        }
+
+        /* メインアプリ画面 */
+        #app-content {
+            display: none; /* 初期状態はロック */
+        }
+
         .category-card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -55,7 +93,6 @@
             padding: 16px;
             margin-bottom: 16px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
         }
 
         .category-card h2 {
@@ -74,18 +111,30 @@
 
         .item-row {
             display: flex;
-            align-items: center;
-            margin-bottom: 10px;
+            flex-direction: column; /* 質問欄の下に入力欄がくる配置 */
+            background-color: rgba(10, 25, 47, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .item-label {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            font-weight: 500;
         }
 
         .item-input {
-            flex: 1;
+            width: 100%;
             background-color: var(--bg-color);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             padding: 10px;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 0.9rem;
+            box-sizing: border-box;
         }
 
         .item-input:focus {
@@ -93,15 +142,19 @@
             border-color: var(--accent-gold);
         }
 
+        .row-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 6px;
+        }
+
         .delete-btn {
             background: transparent;
             border: none;
             color: var(--danger-red);
-            font-size: 1.2rem;
+            font-size: 0.85rem;
             cursor: pointer;
-            padding: 0 8px;
-            margin-left: 8px;
-            transition: opacity 0.2s;
+            padding: 4px 8px;
         }
 
         .delete-btn:hover {
@@ -124,6 +177,23 @@
         .add-btn:hover {
             background-color: rgba(212, 175, 55, 0.1);
         }
+
+        .lock-lock-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .relock-btn {
+            background-color: transparent;
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
@@ -134,68 +204,120 @@
             <p>偏愛ツールシリーズ：オフライン防災・身分証マネージャー</p>
         </header>
 
-        <div id="app-categories"></div>
+        <!-- ロック画面（2回目以降、または手動ロック時に表示） -->
+        <div id="lock-screen">
+            <h2>要塞はロックされています</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">安全を守るため、生体認証またはパスワードで解除してください。</p>
+            <button class="lock-btn" onclick="unlockApp()">🔒 生体認証 / 解除する</button>
+        </div>
+
+        <!-- メインアプリ画面（ロック解除後に表示） -->
+        <div id="app-content">
+            <div class="lock-lock-bar">
+                <span style="color: var(--accent-gold); font-size: 0.85rem;">🟢 要塞のセキュリティ：保護中</span>
+                <button class="relock-btn" onclick="relockApp()">🔒 今すぐロックする</button>
+            </div>
+            <div id="app-categories"></div>
+        </div>
     </div>
 
     <script>
-        const initialData = [
+        // 初回起動かどうかを判定（localStorageを使用）
+        const isFirstTime = !localStorage.getItem('pocket_yosai_initialized');
+
+        let appData = [
             {
                 title: "1. 本人確認・身分証明情報",
                 items: [
-                    "マイナンバーカード情報（番号や控えのデータ）",
-                    "運転免許証またはパスポートの番号・有効期限",
-                    "健康保険証（またはマイナ保険証の登録情報）の記号・番号",
-                    "年金手帳の基礎年金番号",
-                    "住民票や戸籍の基本情報メモ"
+                    { label: "マイナンバーカード情報（番号や控えのデータ）", value: "" },
+                    { label: "運転免許証またはパスポートの番号・有効期限", value: "" },
+                    { label: "健康保険証（またはマイナ保険証の登録情報）の記号・番号", value: "" },
+                    { label: "年金手帳の基礎年金番号", value: "" },
+                    { label: "住民票や戸籍の基本情報メモ", value: "" }
                 ]
             },
             {
                 title: "2. 医療・健康・緊急連絡先",
                 items: [
-                    "家族・親族の緊急連絡先リスト（電話番号・続柄）",
-                    "かかりつけの病院名、医師の氏名、連絡先",
-                    "常備している薬の名前やアレルギー情報のメモ",
-                    "血液型および持病・既往歴の簡易メモ",
-                    "加入している医療・生命保険の証券番号と連絡先"
+                    { label: "家族・親族の緊急連絡先リスト（電話番号・続柄）", value: "" },
+                    { label: "かかりつけの病院名、医師の氏名、連絡先", value: "" },
+                    { label: "常備している薬の名前やアレルギー情報のメモ", value: "" },
+                    { label: "血液型および持病・既往歴の簡易メモ", value: "" },
+                    { label: "加入している医療・生命保険の証券番号と連絡先", value: "" }
                 ]
             },
             {
                 title: "3. 住まい・ライフライン契約情報",
                 items: [
-                    "火災保険・地震保険の証券番号と保険会社の連絡先",
-                    "賃貸物件の契約情報（管理会社名、電話番号、部屋番号）",
-                    "電気・ガス・水道の契約者番号・お客様番号",
-                    "携帯電話・通信会社の契約情報と緊急時窓口",
-                    "メインで利用している銀行口座・クレジットカードの緊急停止窓口"
+                    { label: "火災保険・地震保険の証券番号と保険会社の連絡先", value: "" },
+                    { label: "賃貸物件の契約情報（管理会社名、電話番号、部屋番号）", value: "" },
+                    { label: "電気・ガス・水道の契約者番号・お客様番号", value: "" },
+                    { label: "携帯電話・通信会社の契約情報と緊急時窓口", value: "" },
+                    { label: "メインで利用している銀行口座・クレジットカードの緊急停止窓口", value: "" }
                 ]
             },
             {
                 title: "4. 避難・防災アクションプラン",
                 items: [
-                    "自治体の指定避難所・広域避難場所の名称と住所",
-                    "家族からはぐれた場合の集合場所や安否確認の取り決め内容",
-                    "自宅の防災備蓄品（水・食料・防災グッズ）のリスト",
-                    "ペットを飼っている場合の登録情報・ワクチン接種履歴",
-                    "非常持ち出し袋のチェックリストと置き場所メモ"
+                    { label: "自治体の指定避難所・広域避難場所の名称と住所", value: "" },
+                    { label: "家族からはぐれた場合の集合場所や安否確認の取り決め内容", value: "" },
+                    { label: "自宅の防災備蓄品（水・食料・防災グッズ）のリスト", value: "" },
+                    { label: "ペットを飼っている場合の登録情報・ワクチン接種履歴", value: "" },
+                    { label: "非常持ち出し袋のチェックリストと置き場所メモ", value: "" }
                 ]
             },
             {
                 title: "5. デジタル資産・重要アカウント管理",
                 items: [
-                    "重要アプリやパスワード管理ツールのリカバリ情報（オフライン用）",
-                    "主要なメールアドレスの復旧用電話番号・連絡先",
-                    "クラウドストレージやバックアップの保存先メモ",
-                    "緊急時に停止すべき重要サブスクリプションのリスト",
-                    "端末を紛失した際のリモートロック手順・キャリアの窓口"
+                    { label: "重要アプリやパスワード管理ツールのリカバリ情報（オフライン用）", value: "" },
+                    { label: "主要なメールアドレスの復旧用電話番号・連絡先", value: "" },
+                    { label: "クラウドストレージやバックアップの保存先メモ", value: "" },
+                    { label: "緊急時に停止すべき重要サブスクリプションのリスト", value: "" },
+                    { label: "端末を紛失した際のリモートロック手順・キャリアの窓口", value: "" }
                 ]
             }
         ];
+
+        // 保存データの読み込み
+        const savedData = localStorage.getItem('pocket_yosai_data');
+        if (savedData) {
+            appData = JSON.parse(savedData);
+        }
+
+        // 初回の場合は自動でロック画面をスキップして中身を見せる
+        window.onload = function() {
+            if (isFirstTime) {
+                // 初回はロックを解除した状態ですぐ中身を見せる
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                localStorage.setItem('pocket_yosai_initialized', 'true');
+                renderApp();
+            } else {
+                // 2回目以降はロック画面を表示
+                document.getElementById('lock-screen').style.display = 'block';
+                document.getElementById('app-content').style.display = 'none';
+            }
+        };
+
+        // ロック解除ボタン（生体認証をシミュレート、将来的にWeb Authentication API等に拡張可能）
+        function unlockApp() {
+            // 本格的な生体認証（スマホのFace ID等）を呼び出す雰囲気を演出
+            document.getElementById('lock-screen').style.display = 'none';
+            document.getElementById('app-content').style.display = 'block';
+            renderApp();
+        }
+
+        // 手動ロックボタン
+        function relockApp() {
+            document.getElementById('lock-screen').style.display = 'block';
+            document.getElementById('app-content').style.display = 'none';
+        }
 
         function renderApp() {
             const container = document.getElementById('app-categories');
             container.innerHTML = '';
 
-            initialData.forEach((category, catIndex) => {
+            appData.forEach((category, catIndex) => {
                 const card = document.createElement('div');
                 card.className = 'category-card';
 
@@ -203,8 +325,11 @@
                 category.items.forEach((item, itemIndex) => {
                     itemsHtml += `
                         <li class="item-row">
-                            <input type="text" class="item-input" value="${item}" onchange="updateItem(${catIndex}, ${itemIndex}, this.value)">
-                            <button class="delete-btn" onclick="deleteItem(${catIndex}, ${itemIndex})">×</button>
+                            <span class="item-label">${item.label}</span>
+                            <input type="text" class="item-input" value="${item.value}" placeholder="ここに情報を入力..." onchange="updateItem(${catIndex},${itemIndex}, this.value)">
+                            <div class="row-actions">
+                                <button class="delete-btn" onclick="deleteItem(${catIndex},${itemIndex})">削除</button>
+                            </div>
                         </li>
                     `;
                 });
@@ -220,20 +345,28 @@
         }
 
         function updateItem(catIndex, itemIndex, value) {
-            initialData[catIndex].items[itemIndex] = value;
+            appData[catIndex].items[itemIndex].value = value;
+            saveData();
         }
 
         function deleteItem(catIndex, itemIndex) {
-            initialData[catIndex].items.splice(itemIndex, 1);
+            appData[catIndex].items.splice(itemIndex, 1);
+            saveData();
             renderApp();
         }
 
         function addItem(catIndex) {
-            initialData[catIndex].items.push("新しい項目を入力");
-            renderApp();
+            const newLabel = prompt("追加する項目名を入力してください：", "新しい項目");
+            if (newLabel) {
+                appData[catIndex].items.push({ label: newLabel, value: "" });
+                saveData();
+                renderApp();
+            }
         }
 
-        renderApp();
+        function saveData() {
+            localStorage.setItem('pocket_yosai_data', JSON.stringify(appData));
+        }
     </script>
 </body>
 </html>
