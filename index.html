@@ -6,14 +6,14 @@
     <title>ポケット要塞</title>
     <style>
         :root {
-            --bg-color: #F0FDF4;
+            --bg-color: #F5F4F0;
             --card-bg: #FFFFFF;
-            --text-primary: #065F46;
-            --text-secondary: #4B5563;
-            --accent-color: #10B981;
-            --accent-hover: #059669;
-            --danger-red: #EF4444;
-            --border-color: #D1D5DB;
+            --text-primary: #3E3A36;
+            --text-secondary: #78716C;
+            --accent-color: #78716C;
+            --accent-hover: #57534E;
+            --danger-red: #DC2626;
+            --border-color: #E7E5E4;
         }
 
         body {
@@ -56,7 +56,7 @@
             padding: 24px;
             text-align: center;
             margin-top: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
 
         .card h2 {
@@ -110,11 +110,11 @@
             background-color: var(--accent-hover);
         }
 
-        /* リセットボタン（開発・テスト用） */
+        /* リセットボタン（設定用） */
         .reset-link {
             margin-top: 20px;
             font-size: 0.75rem;
-            color: #9CA3AF;
+            color: #A8A29E;
             background: none;
             border: none;
             cursor: pointer;
@@ -146,7 +146,7 @@
         .item-row {
             display: flex;
             flex-direction: column;
-            background-color: #F9FAFB;
+            background-color: #FAFAF9;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
@@ -155,7 +155,7 @@
 
         .item-label {
             font-size: 0.9rem;
-            color: #1F2937;
+            color: var(--text-primary);
             margin-bottom: 6px;
             font-weight: 500;
         }
@@ -164,7 +164,7 @@
             width: 100%;
             background-color: #FFFFFF;
             border: 1px solid var(--border-color);
-            color: #1F2937;
+            color: var(--text-primary);
             padding: 10px;
             border-radius: 6px;
             font-size: 0.9rem;
@@ -229,14 +229,14 @@
             <p>情報マネージャー</p>
         </header>
 
-        <!-- 1. 初回セットアップ画面（ダミー＆正規パスワード登録） -->
+        <!-- 1. 初回セットアップ画面 -->
         <div id="setup-screen" class="card" style="display: none;">
             <h2>初期セットアップ</h2>
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;">
-                ダミー用と本物用のパスワードをそれぞれ設定してください。
+                ダミー用と本物用のパスワードを設定してください。
             </p>
             <div class="input-group">
-                <label>🟢 ダミー用パスワード（そのまま開く用）</label>
+                <label>🔓 ダミー用パスワード（そのまま開く用）</label>
                 <input type="password" id="setup-dummy" class="app-input" placeholder="例: dummy123">
             </div>
             <div class="input-group">
@@ -246,7 +246,7 @@
             <button class="app-btn" onclick="saveSetup()">設定を保存してはじめる</button>
         </div>
 
-        <!-- 2. スマート・ロック解除画面 -->
+        <!-- 2. ロック解除画面 -->
         <div id="lock-screen" class="card" style="display: none;">
             <h2>ロック解除</h2>
             <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
@@ -269,22 +269,25 @@
     </div>
 
     <script>
+        // 本物の重要データ（生体認証を突破した先）
         let realData = [
             {
-                title: "1. 本人確認・身分証明情報（本物要塞）",
+                title: "1. 本人確認・重要口座（本物要塞）",
                 items: [
-                    { label: "マイナンバーカード関連の重要控え", value: "" },
-                    { label: "パスポート番号・重要口座情報", value: "" }
+                    { label: "マイナンバーカード関連控え", value: "" },
+                    { label: "メインバンク口座番号・暗証番号", value: "" }
                 ]
             }
         ];
 
+        // カモフラージュ用のダミーデータ（一見すると重要そうだけど実は普段使いのメモ）
         let dummyData = [
             {
-                title: "1. 日常の買い物・メモ（ダミー）",
+                title: "1. アカウント・サブスク管理（日常メモ）",
                 items: [
-                    { label: "スーパーで買うもの（牛乳、卵など）", value: "" },
-                    { label: "今週末の予定メモ", value: "" }
+                    { label: "自宅Wi-Fiルーターの接続パスワード", value: "" },
+                    { label: "動画配信サービス（共有アカウント用）", value: "" },
+                    { label: "よく行くカフェの会員・ポイント番号", value: "" }
                 ]
             }
         ];
@@ -295,25 +298,21 @@
             checkSetup();
         };
 
-        // 登録済みかどうかのチェック
         function checkSetup() {
             const savedDummy = localStorage.getItem('pocket_dummy');
             const savedReal = localStorage.getItem('pocket_real');
 
             if (!savedDummy || !savedReal) {
-                // 未登録ならセットアップ画面を表示
                 document.getElementById('setup-screen').style.display = 'block';
                 document.getElementById('lock-screen').style.display = 'none';
                 document.getElementById('app-content').style.display = 'none';
             } else {
-                // 登録済みならロック画面を表示
                 document.getElementById('setup-screen').style.display = 'none';
                 document.getElementById('lock-screen').style.display = 'block';
                 document.getElementById('app-content').style.display = 'none';
             }
         }
 
-        // 初期セットアップの保存
         function saveSetup() {
             const dummyVal = document.getElementById('setup-dummy').value.trim();
             const realVal = document.getElementById('setup-real').value.trim();
@@ -335,7 +334,6 @@
             checkSetup();
         }
 
-        // ロック解除の判定
         function handleUnlock() {
             const inputVal = document.getElementById('pass-input').value;
             const status = document.getElementById('security-status');
@@ -343,12 +341,10 @@
             const savedReal = localStorage.getItem('pocket_real');
 
             if (inputVal === savedDummy) {
-                // ① ダミーパスワード：そのままダミー画面へ
                 currentActiveData = dummyData;
                 status.innerText = "🟢 ステータス：通常";
                 proceedUnlock();
             } else if (inputVal === savedReal) {
-                // ② 本物パスワード：その後に生体認証へ
                 const bioConfirmed = confirm("【端末のセキュリティ】生体認証（指紋・顔認証）を行います。");
                 if (bioConfirmed) {
                     currentActiveData = realData;
