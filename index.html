@@ -6,14 +6,14 @@
     <title>ポケット要塞</title>
     <style>
         :root {
-            --bg-color: #F5F4F0;
+            --bg-color: #FDFBF7;
             --card-bg: #FFFFFF;
-            --text-primary: #3E3A36;
-            --text-secondary: #78716C;
-            --accent-color: #78716C;
-            --accent-hover: #57534E;
+            --text-primary: #3E3832;
+            --text-secondary: #7F756D;
+            --accent-color: #5C4033;
+            --accent-hover: #432E23;
             --danger-red: #DC2626;
-            --border-color: #E7E5E4;
+            --border-color: #E6E2DC;
         }
 
         body {
@@ -114,7 +114,7 @@
         .reset-link {
             margin-top: 20px;
             font-size: 0.75rem;
-            color: #A8A29E;
+            color: #A89F95;
             background: none;
             border: none;
             cursor: pointer;
@@ -146,7 +146,7 @@
         .item-row {
             display: flex;
             flex-direction: column;
-            background-color: #FAFAF9;
+            background-color: #F7F5F0;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
@@ -280,14 +280,16 @@
             }
         ];
 
-        // カモフラージュ用のダミーデータ（一見すると重要そうだけど実は普段使いのメモ）
+        // カモフラージュ用のダミーデータ（退屈な日常メモのなかに、絶妙な「餌」を混ぜたハイブリッド）
         let dummyData = [
             {
-                title: "1. アカウント・サブスク管理（日常メモ）",
+                title: "1. 日常のメモ・アカウント管理",
                 items: [
                     { label: "自宅Wi-Fiルーターの接続パスワード", value: "" },
-                    { label: "動画配信サービス（共有アカウント用）", value: "" },
-                    { label: "よく行くカフェの会員・ポイント番号", value: "" }
+                    { label: "🛒 スーパーの買い物メモ（牛乳、卵など）", value: "" },
+                    { label: "💡 【重要】お小遣い口座（残高わずか・メイン非推奨）", value: "みずほ普通: ****1234 (※暗証番号は非記載)" }, // 👈 絶妙な餌①
+                    { label: "📅 今週末の予定・美容室メモ", value: "" },
+                    { label: "🔑 〇〇フリマ・サブスク用ログインID", value: "user_sub@example.com" } // 👈 絶妙な餌②
                 ]
             }
         ];
