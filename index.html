@@ -6,14 +6,14 @@
     <title>ポケット要塞</title>
     <style>
         :root {
-            --bg-color: #FDFBF7;
-            --card-bg: #FFFFFF;
-            --text-primary: #3E3832;
-            --text-secondary: #7F756D;
-            --accent-color: #5C4033;
-            --accent-hover: #432E23;
-            --danger-red: #DC2626;
-            --border-color: #E6E2DC;
+            --bg-color: #18181B;
+            --card-bg: #27272A;
+            --text-primary: #F4F4F5;
+            --text-secondary: #A1A1AA;
+            --accent-color: #D4AF37; /* ゴールドベージュ */
+            --accent-hover: #C5A028;
+            --danger-red: #EF4444;
+            --border-color: #3F3F46;
         }
 
         body {
@@ -56,7 +56,7 @@
             padding: 24px;
             text-align: center;
             margin-top: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         .card h2 {
@@ -82,7 +82,9 @@
             width: 100%;
             padding: 12px;
             font-size: 1rem;
+            background-color: #18181B;
             border: 1px solid var(--border-color);
+            color: var(--text-primary);
             border-radius: 8px;
             box-sizing: border-box;
         }
@@ -94,7 +96,7 @@
 
         .app-btn {
             background-color: var(--accent-color);
-            color: #FFFFFF;
+            color: #18181B;
             border: none;
             padding: 12px 24px;
             font-size: 1rem;
@@ -114,7 +116,7 @@
         .reset-link {
             margin-top: 20px;
             font-size: 0.75rem;
-            color: #A89F95;
+            color: #71717A;
             background: none;
             border: none;
             cursor: pointer;
@@ -132,7 +134,7 @@
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .category-card h2 {
@@ -146,23 +148,46 @@
         .item-row {
             display: flex;
             flex-direction: column;
-            background-color: #F7F5F0;
+            background-color: #1E1E22;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
             margin-bottom: 12px;
         }
 
+        .item-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
         .item-label {
             font-size: 0.9rem;
             color: var(--text-primary);
-            margin-bottom: 6px;
             font-weight: 500;
+        }
+
+        /* 個別ロック・アンロックボタン */
+        .lock-toggle-btn {
+            background: #27272A;
+            border: 1px solid var(--border-color);
+            color: var(--accent-color);
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .item-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
         }
 
         .item-input {
             width: 100%;
-            background-color: #FFFFFF;
+            background-color: #121214;
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             padding: 10px;
@@ -174,6 +199,14 @@
         .item-input:focus {
             outline: none;
             border-color: var(--accent-color);
+        }
+
+        /* 誤操作防止のロック中スタイル */
+        .item-input.locked {
+            color: var(--text-secondary);
+            background-color: #1A1A1E;
+            letter-spacing: 2px;
+            cursor: not-allowed;
         }
 
         .row-actions {
@@ -226,7 +259,7 @@
     <div class="container">
         <header>
             <h1>🛡️ ポケット要塞</h1>
-            <p>情報マネージャー</p>
+            <p>情報マネージャー（セキュアモード）</p>
         </header>
 
         <!-- 1. 初回セットアップ画面 -->
@@ -269,32 +302,31 @@
     </div>
 
     <script>
-        // 本物の重要データ（生体認証を突破した先）
+        // 本物の重要データ（個別ロックプロパティ 'isLocked: true' を追加）
         let realData = [
             {
                 title: "1. 本人確認・重要口座（本物要塞）",
                 items: [
-                    { label: "マイナンバーカード関連控え", value: "" },
-                    { label: "メインバンク口座番号・暗証番号", value: "" }
+                    { label: "マイナンバーカード関連控え", value: "1234-5678-9012", isLocked: true },
+                    { label: "メインバンク口座番号・暗証番号", value: "三菱UFJ 普通 9876543 (PIN: 1234)", isLocked: true }
                 ]
             }
         ];
 
-        // カモフラージュ用のダミーデータ（退屈な日常メモのなかに、絶妙な「餌」を混ぜたハイブリッド）
+        // ダミーデータ（こちらは通常通り自由に編集可能）
         let dummyData = [
             {
                 title: "1. 日常のメモ・アカウント管理",
                 items: [
-                    { label: "自宅Wi-Fiルーターの接続パスワード", value: "" },
-                    { label: "🛒 スーパーの買い物メモ（牛乳、卵など）", value: "" },
-                    { label: "💡 【重要】お小遣い口座（残高わずか・メイン非推奨）", value: "みずほ普通: ****1234 (※暗証番号は非記載)" }, // 👈 絶妙な餌①
-                    { label: "📅 今週末の予定・美容室メモ", value: "" },
-                    { label: "🔑 〇〇フリマ・サブスク用ログインID", value: "user_sub@example.com" } // 👈 絶妙な餌②
+                    { label: "自宅Wi-Fiルーターの接続パスワード", value: "home_wifi_5g", isLocked: false },
+                    { label: "🛒 スーパーの買い物メモ（牛乳、卵など）", value: "牛乳、卵、キャベツ", isLocked: false },
+                    { label: "💡 お小遣い口座（日常用）", value: "みずほ普通: ****1234", isLocked: false }
                 ]
             }
         ];
 
         let currentActiveData = realData;
+        let isRealMode = false;
 
         window.onload = function() {
             checkSetup();
@@ -344,12 +376,14 @@
 
             if (inputVal === savedDummy) {
                 currentActiveData = dummyData;
+                isRealMode = false;
                 status.innerText = "🟢 ステータス：通常";
                 proceedUnlock();
             } else if (inputVal === savedReal) {
                 const bioConfirmed = confirm("【端末のセキュリティ】生体認証（指紋・顔認証）を行います。");
                 if (bioConfirmed) {
                     currentActiveData = realData;
+                    isRealMode = true;
                     status.innerText = "🔒 ステータス：要塞防衛中（完全保護）";
                     proceedUnlock();
                 } else {
@@ -390,10 +424,19 @@
 
                 let itemsHtml = '';
                 category.items.forEach((item, itemIndex) => {
+                    // 本物モードかつ個別にロックされている場合は伏せ字＆入力禁止にする
+                    const isLocked = isRealMode && item.isLocked;
+                    const displayValue = isLocked ? "••••••••••••••••" : item.value;
+                    const lockButtonText = isLocked ? "🔓 ロック解除" : "🔒 ロックする";
+                    const inputClass = isLocked ? "item-input locked" : "item-input";
+                    const readOnlyAttr = isLocked ? "readonly" : "";
+
                     itemsHtml += `
                         <div class="item-row">
-                            <span class="item-label">${item.label}</span>
-                            <input type="text" class="item-input" value="${item.value}" placeholder="入力..." onchange="updateItem(${catIndex},${itemIndex}, this.value)">
+                            <div class="item-header-row">
+                                <span class="item-label">${item.label}</span>${isRealMode ? `<button class="lock-toggle-btn" onclick="toggleItemLock(${catIndex}, ${itemIndex})">${lockButtonText}</button>` : ''}
+                            </div>
+                            <input type="text" class="${inputClass}" value="${displayValue}" ${readOnlyAttr} placeholder="入力..." onchange="updateItem(${catIndex},${itemIndex}, this.value)">
                             <div class="row-actions">
                                 <button class="delete-btn" onclick="deleteItem(${catIndex},${itemIndex})">削除</button>
                             </div>
@@ -411,6 +454,12 @@
             });
         }
 
+        // 個別項目のロック・アンロックを切り替える関数
+        function toggleItemLock(catIndex, itemIndex) {
+            currentActiveData[catIndex].items[itemIndex].isLocked = !currentActiveData[catIndex].items[itemIndex].isLocked;
+            renderApp();
+        }
+
         function updateItem(catIndex, itemIndex, value) {
             currentActiveData[catIndex].items[itemIndex].value = value;
         }
@@ -423,7 +472,7 @@
         function addItem(catIndex) {
             const newLabel = prompt("項目名を入力：", "新規項目");
             if (newLabel) {
-                currentActiveData[catIndex].items.push({ label: newLabel, value: "" });
+                currentActiveData[catIndex].items.push({ label: newLabel, value: "", isLocked: isRealMode });
                 renderApp();
             }
         }
