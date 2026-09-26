@@ -3,17 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ポケット要塞</title>
+    <title>ポケット要塞 - プレミアム</title>
+    <!-- PWA用のマニフェスト（インライン設定） -->
+    <link rel="manifest" href="data:application/manifest+json,{
+        'name': 'ポケット要塞',
+        'short_name': '要塞',
+        'start_url': './',
+        'display': 'standalone',
+        'background_color': '#0A0A0C',
+        'theme_color': '#0A0A0C'
+    }">
     <style>
+        /* テーマ別カラー変数（デフォルト：ロイヤル・プラチナブラック） */
         :root {
-            --bg-color: #18181B;
-            --card-bg: #27272A;
-            --text-primary: #F4F4F5;
-            --text-secondary: #A1A1AA;
-            --accent-color: #D4AF37; /* ゴールドベージュ */
-            --accent-hover: #C5A028;
+            --bg-color: #0A0A0C;
+            --card-bg: #141417;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --accent-color: #E2E8F0;
+            --accent-hover: #CBD5E1;
             --danger-red: #EF4444;
-            --border-color: #3F3F46;
+            --border-color: #27272A;
+        }
+
+        /* テーマ1: プラチナブラック */
+        body.theme-platinum {
+            --bg-color: #0A0A0C;
+            --card-bg: #141417;
+            --accent-color: #E2E8F0;
+            --accent-hover: #CBD5E1;
+            --border-color: #27272A;
+        }
+
+        /* テーマ2: バーガンディゴールド */
+        body.theme-burgundy {
+            --bg-color: #1A0D14;
+            --card-bg: #2B1621;
+            --accent-color: #D4AF37;
+            --accent-hover: #E6C547;
+            --border-color: #4A2235;
+        }
+
+        /* テーマ3: フォレストエメラルド */
+        body.theme-emerald {
+            --bg-color: #0D1A12;
+            --card-bg: #162B1E;
+            --accent-color: #4ADE80;
+            --accent-hover: #86EFAC;
+            --border-color: #234832;
         }
 
         body {
@@ -25,6 +62,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: background-color 0.3s ease;
         }
 
         .container {
@@ -48,15 +86,14 @@
             font-size: 0.85rem;
         }
 
-        /* カード共通 */
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 24px;
             text-align: center;
-            margin-top: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            margin-top: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
 
         .card h2 {
@@ -82,7 +119,7 @@
             width: 100%;
             padding: 12px;
             font-size: 1rem;
-            background-color: #18181B;
+            background-color: var(--bg-color);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             border-radius: 8px;
@@ -96,7 +133,7 @@
 
         .app-btn {
             background-color: var(--accent-color);
-            color: #18181B;
+            color: var(--bg-color);
             border: none;
             padding: 12px 24px;
             font-size: 1rem;
@@ -112,20 +149,39 @@
             background-color: var(--accent-hover);
         }
 
-        /* リセットボタン（設定用） */
         .reset-link {
             margin-top: 20px;
             font-size: 0.75rem;
-            color: #71717A;
+            color: var(--text-secondary);
             background: none;
             border: none;
             cursor: pointer;
             text-decoration: underline;
         }
 
-        /* メインアプリ画面 */
         #app-content {
             display: none;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            background-color: var(--card-bg);
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .theme-shop {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
         }
 
         .category-card {
@@ -134,7 +190,6 @@
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         .category-card h2 {
@@ -148,7 +203,7 @@
         .item-row {
             display: flex;
             flex-direction: column;
-            background-color: #1E1E22;
+            background-color: var(--bg-color);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 12px;
@@ -168,9 +223,8 @@
             font-weight: 500;
         }
 
-        /* 個別ロック・アンロックボタン */
         .lock-toggle-btn {
-            background: #27272A;
+            background: var(--card-bg);
             border: 1px solid var(--border-color);
             color: var(--accent-color);
             font-size: 0.75rem;
@@ -179,15 +233,9 @@
             cursor: pointer;
         }
 
-        .item-input-wrapper {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-
         .item-input {
             width: 100%;
-            background-color: #121214;
+            background-color: var(--bg-color);
             border: 1px solid var(--border-color);
             color: var(--text-primary);
             padding: 10px;
@@ -196,15 +244,8 @@
             box-sizing: border-box;
         }
 
-        .item-input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-        }
-
-        /* 誤操作防止のロック中スタイル */
         .item-input.locked {
             color: var(--text-secondary);
-            background-color: #1A1A1E;
             letter-spacing: 2px;
             cursor: not-allowed;
         }
@@ -221,7 +262,6 @@
             color: var(--danger-red);
             font-size: 0.85rem;
             cursor: pointer;
-            padding: 4px 8px;
         }
 
         .add-btn {
@@ -236,13 +276,6 @@
             margin-top: 8px;
         }
 
-        .lock-lock-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
         .relock-btn {
             background-color: transparent;
             border: 1px solid var(--accent-color);
@@ -254,73 +287,88 @@
         }
     </style>
 </head>
-<body>
+<body class="theme-platinum">
 
     <div class="container">
         <header>
             <h1>🛡️ ポケット要塞</h1>
-            <p>情報マネージャー（セキュアモード）</p>
+            <p>オフライン完全ローカル・プレミアム要塞</p>
         </header>
 
         <!-- 1. 初回セットアップ画面 -->
         <div id="setup-screen" class="card" style="display: none;">
             <h2>初期セットアップ</h2>
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;">
-                ダミー用と本物用のパスワードを設定してください。
+                ダミー用、本物用、パニック用のパスワードを設定してください。
             </p>
             <div class="input-group">
-                <label>🔓 ダミー用パスワード（そのまま開く用）</label>
+                <label>🔓 ダミー用パスワード</label>
                 <input type="password" id="setup-dummy" class="app-input" placeholder="例: dummy123">
             </div>
             <div class="input-group">
-                <label>🔒 本物用パスワード（生体認証付き）</label>
+                <label>🔒 本物用パスワード（生体認証連動）</label>
                 <input type="password" id="setup-real" class="app-input" placeholder="例: secret999">
             </div>
-            <button class="app-btn" onclick="saveSetup()">設定を保存してはじめる</button>
+            <div class="input-group">
+                <label>🚨 パニック用パスワード（空っぽ画面）</label>
+                <input type="password" id="setup-panic" class="app-input" placeholder="例: panic000">
+            </div>
+            <button class="app-btn" onclick="saveSetup()">要塞を構築する</button>
         </div>
 
         <!-- 2. ロック解除画面 -->
         <div id="lock-screen" class="card" style="display: none;">
-            <h2>ロック解除</h2>
+            <h2>要塞ロック解除</h2>
             <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
                 パスワードを入力してください。
             </p>
             <input type="password" id="pass-input" class="app-input" style="text-align: center;" placeholder="パスワードを入力">
             <button class="app-btn" onclick="handleUnlock()" style="margin-top: 16px;">解除する</button>
             <br>
-            <button class="reset-link" onclick="resetSetup()">⚙️ パスワードを再設定する</button>
+            <button class="reset-link" onclick="resetSetup()">⚙️ 初期設定をやり直す</button>
         </div>
 
-        <!-- 3. メインアプリ画面 -->
+        <!-- 3. メインアプリ画面（PWA & テーマショップ対応） -->
         <div id="app-content">
-            <div class="lock-lock-bar">
-                <span id="security-status" style="color: var(--accent-color); font-size: 0.85rem; font-weight: bold;">🟢 ステータス：通常</span>
-                <button class="relock-btn" onclick="relockApp()">🔒 ロックする</button>
+            <div class="top-bar">
+                <span id="security-status" style="color: var(--accent-color); font-size: 0.8rem; font-weight: bold;">🟢 通常</span>
+                <select class="theme-shop" id="theme-selector" onchange="changeTheme(this.value)">
+                    <option value="theme-platinum">🎨 プラチナブラック</option>
+                    <option value="theme-burgundy">🍷 バーガンディゴールド</option>
+                    <option value="theme-emerald">🌲 フォレストエメラルド</option>
+                </select>
+                <button class="relock-btn" onclick="relockApp()">🔒 ロック</button>
             </div>
             <div id="app-categories"></div>
         </div>
     </div>
 
     <script>
-        // 本物の重要データ（個別ロックプロパティ 'isLocked: true' を追加）
         let realData = [
             {
-                title: "1. 本人確認・重要口座（本物要塞）",
+                title: "1. 本人確認・重要機密（本物要塞）",
                 items: [
-                    { label: "マイナンバーカード関連控え", value: "1234-5678-9012", isLocked: true },
-                    { label: "メインバンク口座番号・暗証番号", value: "三菱UFJ 普通 9876543 (PIN: 1234)", isLocked: true }
+                    { label: "マイナンバーカード控え", value: "1234-5678-9012", isLocked: true },
+                    { label: "重要口座・シークレット情報", value: "暗号資産ウォレットキー", isLocked: true }
                 ]
             }
         ];
 
-        // ダミーデータ（こちらは通常通り自由に編集可能）
         let dummyData = [
             {
-                title: "1. 日常のメモ・アカウント管理",
+                title: "1. 日常のメモ",
                 items: [
-                    { label: "自宅Wi-Fiルーターの接続パスワード", value: "home_wifi_5g", isLocked: false },
-                    { label: "🛒 スーパーの買い物メモ（牛乳、卵など）", value: "牛乳、卵、キャベツ", isLocked: false },
-                    { label: "💡 お小遣い口座（日常用）", value: "みずほ普通: ****1234", isLocked: false }
+                    { label: "Wi-Fiパスワード", value: "home_wifi_5g", isLocked: false },
+                    { label: "買い物リスト", value: "牛乳、卵、コーヒー豆", isLocked: false }
+                ]
+            }
+        ];
+
+        let panicData = [
+            {
+                title: "（データなし）",
+                items: [
+                    { label: "メモはありません", value: "特になし", isLocked: false }
                 ]
             }
         ];
@@ -330,13 +378,15 @@
 
         window.onload = function() {
             checkSetup();
+            loadTheme();
         };
 
         function checkSetup() {
             const savedDummy = localStorage.getItem('pocket_dummy');
             const savedReal = localStorage.getItem('pocket_real');
+            const savedPanic = localStorage.getItem('pocket_panic');
 
-            if (!savedDummy || !savedReal) {
+            if (!savedDummy || !savedReal || !savedPanic) {
                 document.getElementById('setup-screen').style.display = 'block';
                 document.getElementById('lock-screen').style.display = 'none';
                 document.getElementById('app-content').style.display = 'none';
@@ -350,21 +400,23 @@
         function saveSetup() {
             const dummyVal = document.getElementById('setup-dummy').value.trim();
             const realVal = document.getElementById('setup-real').value.trim();
+            const panicVal = document.getElementById('setup-panic').value.trim();
 
-            if (!dummyVal || !realVal) {
-                alert("両方のパスワードを入力してください！");
+            if (!dummyVal || !realVal || !panicVal) {
+                alert("すべてのパスワードを入力してください！");
                 return;
             }
 
-            if (dummyVal === realVal) {
-                alert("ダミーと本物のパスワードは別のものにしてください！");
+            if (dummyVal === realVal || dummyVal === panicVal || realVal === panicVal) {
+                alert("それぞれのパスワードはすべて別のものにしてください！");
                 return;
             }
 
             localStorage.setItem('pocket_dummy', dummyVal);
             localStorage.setItem('pocket_real', realVal);
+            localStorage.setItem('pocket_panic', panicVal);
 
-            alert("初期設定が完了しました！");
+            alert("要塞の構築が完了しました！");
             checkSetup();
         }
 
@@ -373,22 +425,28 @@
             const status = document.getElementById('security-status');
             const savedDummy = localStorage.getItem('pocket_dummy');
             const savedReal = localStorage.getItem('pocket_real');
+            const savedPanic = localStorage.getItem('pocket_panic');
 
             if (inputVal === savedDummy) {
                 currentActiveData = dummyData;
                 isRealMode = false;
-                status.innerText = "🟢 ステータス：通常";
+                status.innerText = "🟢 通常モード";
                 proceedUnlock();
             } else if (inputVal === savedReal) {
-                const bioConfirmed = confirm("【端末のセキュリティ】生体認証（指紋・顔認証）を行います。");
+                const bioConfirmed = confirm("【生体認証】デバイスのセキュリティ認証を行います。");
                 if (bioConfirmed) {
                     currentActiveData = realData;
                     isRealMode = true;
-                    status.innerText = "🔒 ステータス：要塞防衛中（完全保護）";
+                    status.innerText = "🔒 要塞防衛中";
                     proceedUnlock();
                 } else {
-                    alert("生体認証がキャンセルされました。");
+                    alert("認証がキャンセルされました。");
                 }
+            } else if (inputVal === savedPanic) {
+                currentActiveData = panicData;
+                isRealMode = false;
+                status.innerText = "⚠️ デコイ作動中";
+                proceedUnlock();
             } else {
                 alert("パスワードが違います！");
             }
@@ -407,10 +465,22 @@
         }
 
         function resetSetup() {
-            if (confirm("パスワードを再設定しますか？（現在の設定がクリアされます）")) {
-                localStorage.removeItem('pocket_dummy');
-                localStorage.removeItem('pocket_real');
+            if (confirm("要塞をリセットしますか？")) {
+                localStorage.clear();
                 checkSetup();
+            }
+        }
+
+        function changeTheme(themeName) {
+            document.body.className = themeName;
+            localStorage.setItem('pocket_theme', themeName);
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('pocket_theme');
+            if (savedTheme) {
+                document.body.className = savedTheme;
+                document.getElementById('theme-selector').value = savedTheme;
             }
         }
 
@@ -424,10 +494,9 @@
 
                 let itemsHtml = '';
                 category.items.forEach((item, itemIndex) => {
-                    // 本物モードかつ個別にロックされている場合は伏せ字＆入力禁止にする
                     const isLocked = isRealMode && item.isLocked;
                     const displayValue = isLocked ? "••••••••••••••••" : item.value;
-                    const lockButtonText = isLocked ? "🔓 ロック解除" : "🔒 ロックする";
+                    const lockButtonText = isLocked ? "🔓 解除" : "🔒 ロック";
                     const inputClass = isLocked ? "item-input locked" : "item-input";
                     const readOnlyAttr = isLocked ? "readonly" : "";
 
@@ -454,7 +523,6 @@
             });
         }
 
-        // 個別項目のロック・アンロックを切り替える関数
         function toggleItemLock(catIndex, itemIndex) {
             currentActiveData[catIndex].items[itemIndex].isLocked = !currentActiveData[catIndex].items[itemIndex].isLocked;
             renderApp();
@@ -470,7 +538,7 @@
         }
 
         function addItem(catIndex) {
-            const newLabel = prompt("項目名を入力：", "新規項目");
+            const newLabel = prompt("項目名を入力：", "新しい項目");
             if (newLabel) {
                 currentActiveData[catIndex].items.push({ label: newLabel, value: "", isLocked: isRealMode });
                 renderApp();
