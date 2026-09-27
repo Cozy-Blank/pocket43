@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ポケット要塞 - プレミアム</title>
+    <title>ポケット要塞 - 完全版</title>
     <!-- PWA用のマニフェスト（インライン設定） -->
     <link rel="manifest" href="data:application/manifest+json,{
         'name': 'ポケット要塞',
@@ -84,6 +84,20 @@
         header p {
             color: var(--text-secondary);
             font-size: 0.85rem;
+        }
+
+        /* セキュリティ警告バナー（赤文字アラート） */
+        #security-alert-banner {
+            display: none;
+            background-color: rgba(239, 68, 68, 0.15);
+            border: 1px solid var(--danger-red);
+            color: var(--danger-red);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            text-align: center;
+            font-weight: bold;
         }
 
         .card {
@@ -292,26 +306,27 @@
     <div class="container">
         <header>
             <h1>🛡️ ポケット要塞</h1>
-            <p>オフライン完全ローカル・プレミアム要塞</p>
+            <p>オフライン完全ローカル・プレミアム防衛版</p>
         </header>
+
+        <!-- セキュリティ警告用バナー（古いバージョンのときに赤文字で警告） -->
+        <div id="security-alert-banner">
+            ⚠️ 【警告】古いバージョン（または未更新のセキュリティパッチ）を検知しました。お兄さんと相談して最新コードにアップデートしてください！
+        </div>
 
         <!-- 1. 初回セットアップ画面 -->
         <div id="setup-screen" class="card" style="display: none;">
             <h2>初期セットアップ</h2>
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px;">
-                ダミー用、本物用、パニック用のパスワードを設定してください。
+                日常用の「ダミーパスワード」と、重要機密を守る「本物パスワード」を設定してください。
             </p>
             <div class="input-group">
-                <label>🔓 ダミー用パスワード</label>
+                <label>🔓 日常ダミー用パスワード</label>
                 <input type="password" id="setup-dummy" class="app-input" placeholder="例: dummy123">
             </div>
             <div class="input-group">
                 <label>🔒 本物用パスワード（生体認証連動）</label>
                 <input type="password" id="setup-real" class="app-input" placeholder="例: secret999">
-            </div>
-            <div class="input-group">
-                <label>🚨 パニック用パスワード（空っぽ画面）</label>
-                <input type="password" id="setup-panic" class="app-input" placeholder="例: panic000">
             </div>
             <button class="app-btn" onclick="saveSetup()">要塞を構築する</button>
         </div>
@@ -344,6 +359,10 @@
     </div>
 
     <script>
+        // 要塞のバージョン管理（セキュリティパッチ・チェッカー用）
+        const CURRENT_APP_VERSION = "v2.5.0";
+        const MIN_SAFE_VERSION = "v2.5.0"; // これより古い場合は警告を表示
+
         let realData = [
             {
                 title: "1. 本人確認・重要機密（本物要塞）",
@@ -364,29 +383,32 @@
             }
         ];
 
-        let panicData = [
-            {
-                title: "（データなし）",
-                items: [
-                    { label: "メモはありません", value: "特になし", isLocked: false }
-                ]
-            }
-        ];
-
-        let currentActiveData = realData;
+        let currentActiveData = dummyData;
         let isRealMode = false;
 
         window.onload = function() {
+            checkSecurityVersion();
             checkSetup();
             loadTheme();
         };
 
+        // セキュリティ・バージョンチェック（古い場合に赤文字で警告）
+        function checkSecurityVersion() {
+            const savedVersion = localStorage.getItem('pocket_version') || "v1.0.0";
+            if (savedVersion < MIN_SAFE_VERSION) {
+                document.getElementById('security-alert-banner').style.display = 'block';
+            } else {
+                document.getElementById('security-alert-banner').style.display = 'none';
+            }
+            // 最新バージョンを保持
+            localStorage.setItem('pocket_version', CURRENT_APP_VERSION);
+        }
+
         function checkSetup() {
             const savedDummy = localStorage.getItem('pocket_dummy');
             const savedReal = localStorage.getItem('pocket_real');
-            const savedPanic = localStorage.getItem('pocket_panic');
 
-            if (!savedDummy || !savedReal || !savedPanic) {
+            if (!savedDummy || !savedReal) {
                 document.getElementById('setup-screen').style.display = 'block';
                 document.getElementById('lock-screen').style.display = 'none';
                 document.getElementById('app-content').style.display = 'none';
@@ -400,21 +422,19 @@
         function saveSetup() {
             const dummyVal = document.getElementById('setup-dummy').value.trim();
             const realVal = document.getElementById('setup-real').value.trim();
-            const panicVal = document.getElementById('setup-panic').value.trim();
 
-            if (!dummyVal || !realVal || !panicVal) {
+            if (!dummyVal || !realVal) {
                 alert("すべてのパスワードを入力してください！");
                 return;
             }
 
-            if (dummyVal === realVal || dummyVal === panicVal || realVal === panicVal) {
-                alert("それぞれのパスワードはすべて別のものにしてください！");
+            if (dummyVal === realVal) {
+                alert("ダミーと本物のパスワードは別のものにしてください！");
                 return;
             }
 
             localStorage.setItem('pocket_dummy', dummyVal);
             localStorage.setItem('pocket_real', realVal);
-            localStorage.setItem('pocket_panic', panicVal);
 
             alert("要塞の構築が完了しました！");
             checkSetup();
@@ -425,12 +445,11 @@
             const status = document.getElementById('security-status');
             const savedDummy = localStorage.getItem('pocket_dummy');
             const savedReal = localStorage.getItem('pocket_real');
-            const savedPanic = localStorage.getItem('pocket_panic');
 
             if (inputVal === savedDummy) {
                 currentActiveData = dummyData;
                 isRealMode = false;
-                status.innerText = "🟢 通常モード";
+                status.innerText = "🟢 日常モード";
                 proceedUnlock();
             } else if (inputVal === savedReal) {
                 const bioConfirmed = confirm("【生体認証】デバイスのセキュリティ認証を行います。");
@@ -442,11 +461,6 @@
                 } else {
                     alert("認証がキャンセルされました。");
                 }
-            } else if (inputVal === savedPanic) {
-                currentActiveData = panicData;
-                isRealMode = false;
-                status.innerText = "⚠️ デコイ作動中";
-                proceedUnlock();
             } else {
                 alert("パスワードが違います！");
             }
