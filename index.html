@@ -35,18 +35,17 @@
 
     <script type="text/babel">
         function PocketFortress() {
-            // 状態管理
             const [hasSetup, setHasSetup] = React.useState(false);
             const [isUnlocked, setIsUnlocked] = React.useState(false);
             const [mode, setMode] = React.useState(null); // 'dummy' または 'real'
             
-            // 入力用
+            // セットアップ用入力
             const [setupDummy, setSetupDummy] = React.useState('');
             const [setupReal, setSetupReal] = React.useState('');
             const [loginInput, setLoginInput] = React.useState('');
 
             // その他機能
-            const [showWarning, setShowWarning] = React.useState(false); // VSCodeチェック時のみ表示
+            const [showWarning, setShowWarning] = React.useState(false);
             const [isResetting, setIsResetting] = React.useState(false);
             const [authMode, setAuthMode] = React.useState('password'); // 'password' または 'biometric'
             const [resetPasswordInput, setResetPasswordInput] = React.useState('');
@@ -64,17 +63,32 @@
                 }
             }, []);
 
-            // 初回セットアップ保存
+            // 初回セットアップ保存（本物パスワードは英数含め8文字以上を必須化）
             const handleSetupSave = (e) => {
                 e.preventDefault();
                 if (!setupDummy || !setupReal) {
-                    alert('ダミーと本物の両方のパスワードを入力してください！');
+                    alert('両方のパスワードを入力してください！');
                     return;
                 }
                 if (setupDummy === setupReal) {
                     alert('ダミーと本物のパスワードは別のものにしてください！');
                     return;
                 }
+                // 本物パスワードのバリデーション：8文字以上かつ英字と数字の両方を含む
+                const hasLetter = /[a-zA-Z]/.test(setupReal);
+                const hasNumber = /[0-9]/.test(setupReal);
+                if (setupReal.length < 8 || !hasLetter || !hasNumber) {
+                    alert('【セキュリティ警告】本物用パスワードは「英字と数字を含めた8文字以上」で設定してください！');
+                    return;
+                }
+
+                // 生体認証シミュレーションを必須クリア
+                const bioSuccess = confirm('要塞の防衛力を高めるため、初期設定時に生体認証（指紋/顔）の登録・確認を行います。よろしいですか？');
+                if (!bioSuccess) {
+                    alert('生体認証の確認が取れなかったため、初期設定を中断しました。');
+                    return;
+                }
+
                 localStorage.setItem('pocket_dummy', setupDummy);
                 localStorage.setItem('pocket_real', setupReal);
                 setHasSetup(true);
@@ -92,7 +106,7 @@
                     setIsUnlocked(true);
                     setLoginInput('');
                 } else if (loginInput === savedReal) {
-                    const bioCheck = confirm('【要塞防衛】本物モードにアクセスします。生体認証をシミュレートしますか？');
+                    const bioCheck = confirm('【要塞防衛】本物モードにアクセスします。生体認証（指紋/顔）を行いますか？');
                     if (bioCheck) {
                         setMode('real');
                         setIsUnlocked(true);
@@ -105,11 +119,15 @@
                 }
             };
 
-            // リセット実行
+            // リセット実行（生体認証か本物パスワードの選択式・どちらか必須）
             const handleResetExecute = (e) => {
                 e.preventDefault();
                 if (authMode === 'password') {
                     const savedReal = localStorage.getItem('pocket_real');
+                    if (!resetPasswordInput) {
+                        alert('本物用パスワードを入力してください！');
+                        return;
+                    }
                     if (resetPasswordInput === savedReal) {
                         localStorage.clear();
                         setHasSetup(false);
@@ -121,12 +139,27 @@
                         alert('本物用パスワードが違います！');
                     }
                 } else {
-                    alert('生体認証による本人確認に成功しました！');
+                    const bioConfirm = confirm('【生体認証リセット】端末の生体認証（指紋/顔）による本人確認を行います。');
+                    if (bioConfirm) {
+                        localStorage.clear();
+                        setHasSetup(false);
+                        setIsUnlocked(false);
+                        setIsResetting(false);
+                        alert('生体認証による本人確認が成功し、初期設定を完全にリセットしました。');
+                    } else {
+                        alert('生体認証がキャンセルされました。');
+                    }
+                }
+            };
+
+            // 強制リセット（デバッグ・初期化用）
+            const forceHardReset = () => {
+                if (confirm('【強制リセット】保存されているすべてのデータを消去して最初の初期設定画面に戻しますか？')) {
                     localStorage.clear();
                     setHasSetup(false);
                     setIsUnlocked(false);
                     setIsResetting(false);
-                    alert('初期設定を完全にリセットしました。');
+                    window.location.reload();
                 }
             };
 
@@ -150,13 +183,14 @@
                         </div>
                     )}
 
-                    {/* 1. セットアップ画面 */}
+                    {/* 1. 初期設定画面 */}
                     {!hasSetup ? (
                         <form onSubmit={handleSetupSave} className="space-y-4">
                             <div className="bg-platinum-900/60 p-4 rounded-xl border border-platinum-700 space-y-3">
-                                <h2 className="text-sm font-semibold text-platinum-100">🔐 初期セットアップ</h2>
+                                <h2 className="text-sm font-semibold text-platinum-100">🔐 初回セキュリティ設定</h2>
+                                
                                 <div className="space-y-1">
-                                    <label className="text-xs text-platinum-300">日常ダミー用パスワード</label>
+                                    <label className="text-xs text-platinum-300">日常ダミー用パスワード <span className="text-platinum-300">（桁数制限なし・自由）</span></label>
                                     <input 
                                         type="password" 
                                         placeholder="例: dummy123"
@@ -166,20 +200,27 @@
                                         required
                                     />
                                 </div>
+
                                 <div className="space-y-1">
-                                    <label className="text-xs text-platinum-300">本物用パスワード</label>
+                                    <label className="text-xs text-platinum-300">本物用パスワード <span className="text-blue-400">（英数含め8文字以上必須）</span></label>
                                     <input 
                                         type="password" 
-                                        placeholder="例: secret999"
+                                        placeholder="例: Fortress99!"
                                         value={setupReal}
                                         onChange={(e) => setSetupReal(e.target.value)}
                                         className="w-full bg-platinum-800 border border-platinum-600 rounded-lg px-3 py-2 text-sm text-platinum-100 outline-none focus:border-blue-500"
                                         required
                                     />
                                 </div>
+
+                                <div className="bg-platinum-800 p-3 rounded-lg border border-platinum-700 text-center space-y-1">
+                                    <p className="text-xs font-medium text-platinum-300">👆 生体認証の紐付け</p>
+                                    <p className="text-[10px] text-platinum-300">※「要塞を構築する」を押すとデバイスの生体認証確認が実行されます。</p>
+                                </div>
                             </div>
+
                             <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-3 rounded-xl transition">
-                                要塞を構築する
+                                要塞を構築する（生体認証付き）
                             </button>
                         </form>
                     ) : !isUnlocked ? (
@@ -201,7 +242,7 @@
                                 解除して入城する
                             </button>
 
-                            {/* 初期設定リセットセクション（選択式） */}
+                            {/* 初期設定リセットセクション（選択式：必須） */}
                             <div className="border-t border-platinum-700 pt-4">
                                {!isResetting ? (
                                     <button 
@@ -214,7 +255,7 @@
                                 ) : (
                                     <div className="bg-platinum-900 p-4 rounded-xl border border-blue-500/50 space-y-3">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-xs font-bold text-blue-400">要塞の再初期化セキュリティ</span>
+                                            <span className="text-xs font-bold text-blue-400">要塞の再初期化（認証必須）</span>
                                             <button type="button" onClick={() => setIsResetting(false)} className="text-xs text-platinum-300 hover:text-white">✕ 閉じる</button>
                                         </div>
 
@@ -224,31 +265,33 @@
                                                 onClick={() => setAuthMode('password')}
                                                 className={`text-xs py-1.5 rounded-md font-medium transition ${authMode === 'password' ? 'bg-blue-600 text-white' : 'text-platinum-300'}`}
                                             >
-                                                ① パスワード
+                                                本物パスワード
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setAuthMode('biometric')}
                                                 className={`text-xs py-1.5 rounded-md font-medium transition ${authMode === 'biometric' ? 'bg-blue-600 text-white' : 'text-platinum-300'}`}
                                             >
-                                                ③ 生体認証
+                                                生体認証
                                             </button>
                                         </div>
 
                                         {authMode === 'password' ? (
                                             <div className="space-y-1">
-                                                <label className="text-xs text-platinum-300">本物用パスワードを入力</label>
+                                                <label className="text-xs text-platinum-300">本物用パスワードを入力（必須）</label>
                                                 <input 
                                                     type="password" 
                                                     placeholder="本物用パスワード"
                                                     value={resetPasswordInput}
                                                     onChange={(e) => setResetPasswordInput(e.target.value)}
                                                     className="w-full bg-platinum-800 border border-platinum-600 rounded-lg px-3 py-2 text-sm text-platinum-100 outline-none"
+                                                    required
                                                 />
                                             </div>
                                         ) : (
-                                            <div className="text-center py-2 text-xs text-platinum-300">
-                                                指紋・顔認証で本人確認を行います 👆📱
+                                            <div className="text-center py-2 text-xs text-platinum-300 space-y-1">
+                                                <p>端末の生体認証（指紋/顔）で本人確認を行います</p>
+                                                <p className="text-[10px] text-blue-400">※クリアしないと初期化できません</p>
                                             </div>
                                         )}
 
@@ -300,6 +343,13 @@
                             </div>
                         </div>
                     )}
+
+                    {/* テスト・開発用：初期化ボタン */}
+                    <div className="text-center pt-2 border-t border-platinum-800">
+                        <button onClick={forceHardReset} className="text-[10px] text-platinum-300 hover:text-red-400 transition">
+                            🔄 [開発用] データをクリアして初期設定をやり直す
+                        </button>
+                    </div>
 
                 </div>
             );
