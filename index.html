@@ -36,35 +36,104 @@
     <script type="text/babel">
         function PocketFortress() {
             // 状態管理
-            const [showWarning, setShowWarning] = React.useState(false); // 普段は非表示。VSCodeからのチェック時のみ表示可能
-            const [isLocked, setIsLocked] = React.useState(true);
-            const [authMode, setAuthMode] = React.useState('password'); // 'password' または 'biometric'
-            const [passwordInput, setPasswordInput] = React.useState('');
-            const [wifiMemo, setWifiMemo] = React.useState('home_wifi_5g');
-            const [isResetting, setIsResetting] = React.useState(false);
+            const [hasSetup, setHasSetup] = React.useState(false);
+            const [isUnlocked, setIsUnlocked] = React.useState(false);
+            const [mode, setMode] = React.useState(null); // 'dummy' または 'real'
+            
+            // 入力用
+            const [setupDummy, setSetupDummy] = React.useState('');
+            const [setupReal, setSetupReal] = React.useState('');
+            const [loginInput, setLoginInput] = React.useState('');
 
-            // 初期設定リセットの実行
-            const handleReset = (e) => {
+            // その他機能
+            const [showWarning, setShowWarning] = React.useState(false); // VSCodeチェック時のみ表示
+            const [isResetting, setIsResetting] = React.useState(false);
+            const [authMode, setAuthMode] = React.useState('password'); // 'password' または 'biometric'
+            const [resetPasswordInput, setResetPasswordInput] = React.useState('');
+
+            // データ管理
+            const [wifiMemo, setWifiMemo] = React.useState('home_wifi_5g');
+            const [secretMemo, setSecretMemo] = React.useState('マイナンバー・重要シークレット');
+
+            // 起動時にローカルストレージをチェック
+            React.useEffect(() => {
+                const savedDummy = localStorage.getItem('pocket_dummy');
+                const savedReal = localStorage.getItem('pocket_real');
+                if (savedDummy && savedReal) {
+                    setHasSetup(true);
+                }
+            }, []);
+
+            // 初回セットアップ保存
+            const handleSetupSave = (e) => {
                 e.preventDefault();
-                if (authMode === 'password') {
-                    if (passwordInput === 'secret123') { // 仮のパスワード
-                        alert('初期設定をリセットしました！');
-                        setIsResetting(false);
-                        setPasswordInput('');
+                if (!setupDummy || !setupReal) {
+                    alert('ダミーと本物の両方のパスワードを入力してください！');
+                    return;
+                }
+                if (setupDummy === setupReal) {
+                    alert('ダミーと本物のパスワードは別のものにしてください！');
+                    return;
+                }
+                localStorage.setItem('pocket_dummy', setupDummy);
+                localStorage.setItem('pocket_real', setupReal);
+                setHasSetup(true);
+                alert('要塞の初期セットアップが完了しました！');
+            };
+
+            // ログイン判定
+            const handleLogin = (e) => {
+                e.preventDefault();
+                const savedDummy = localStorage.getItem('pocket_dummy');
+                const savedReal = localStorage.getItem('pocket_real');
+
+                if (loginInput === savedDummy) {
+                    setMode('dummy');
+                    setIsUnlocked(true);
+                    setLoginInput('');
+                } else if (loginInput === savedReal) {
+                    const bioCheck = confirm('【要塞防衛】本物モードにアクセスします。生体認証をシミュレートしますか？');
+                    if (bioCheck) {
+                        setMode('real');
+                        setIsUnlocked(true);
+                        setLoginInput('');
                     } else {
-                        alert('パスワードが違います！');
+                        alert('認証がキャンセルされました。');
                     }
                 } else {
-                    // 生体認証のシミュレーション（実際はWebAuthn APIを呼び出す）
-                    alert('生体認証（指紋/顔）をシミュレートします。認証成功！');
+                    alert('パスワードが違います！');
+                }
+            };
+
+            // リセット実行
+            const handleResetExecute = (e) => {
+                e.preventDefault();
+                if (authMode === 'password') {
+                    const savedReal = localStorage.getItem('pocket_real');
+                    if (resetPasswordInput === savedReal) {
+                        localStorage.clear();
+                        setHasSetup(false);
+                        setIsUnlocked(false);
+                        setIsResetting(false);
+                        setResetPasswordInput('');
+                        alert('初期設定を完全にリセットしました。');
+                    } else {
+                        alert('本物用パスワードが違います！');
+                    }
+                } else {
+                    alert('生体認証による本人確認に成功しました！');
+                    localStorage.clear();
+                    setHasSetup(false);
+                    setIsUnlocked(false);
                     setIsResetting(false);
+                    alert('初期設定を完全にリセットしました。');
                 }
             };
 
             return (
                 <div className="w-full max-w-md bg-platinum-800 border border-platinum-700 rounded-2xl shadow-2xl overflow-hidden p-6 space-y-6">
                     
-                    {/* ヘッダータイトル */}
+                    {/* ヘッダー */}
                     <div className="text-center space-y-1">
                         <div className="flex justify-center items-center space-x-2 text-blue-400 font-bold text-xl">
                             <span>🛡️</span>
@@ -73,7 +142,7 @@
                         <p className="text-xs text-platinum-300">オフライン完全ローカル・プレミアム防衛版</p>
                     </div>
 
-                    {/* VSCodeからチェック時のみ表示する赤文字の警告 */}
+                    {/* VSCodeチェック時のみ表示する赤文字の警告 */}
                     {showWarning && (
                         <div className="bg-red-950/80 border border-red-600 rounded-xl p-3 text-xs text-red-200 flex items-start space-x-2 animate-pulse">
                             <span>⚠️</span>
@@ -81,107 +150,156 @@
                         </div>
                     )}
 
-                    {/* モード切り替え ＆ ロックボタン */}
-                    <div className="flex items-center justify-between bg-platinum-700/50 p-3 rounded-xl border border-platinum-600">
-                        <div className="flex items-center space-x-2">
-                            <span className="w-3 h-3 bg-green-500 rounded-full animate-ping"></span>
-                            <span className="text-sm font-medium">日常モード</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <select className="bg-platinum-800 text-xs border border-platinum-600 rounded-lg px-2 py-1 text-platinum-100 outline-none">
-                                <option>🎨 プラチナブラック</option>
-                            </select>
-                            <button 
-                                onClick={() => setShowWarning(!showWarning)}
-                                className="bg-platinum-600 hover:bg-platinum-500 text-xs px-3 py-1.5 rounded-lg font-medium transition"
-                            >
-                                🔒 ロック
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* コンテンツセクション：日常のメモ */}
-                    <div className="bg-platinum-900/60 border border-platinum-700/60 rounded-xl p-4 space-y-3">
-                        <h2 className="text-sm font-semibold text-platinum-300">1. 日常のメモ</h2>
-                        <div className="space-y-1">
-                            <label className="text-xs text-platinum-300">Wi-Fiパスワード</label>
-                            <input 
-                                type="text" 
-                                value={wifiMemo} 
-                                onChange={(e) => setWifiMemo(e.target.value)}
-                                className="w-full bg-platinum-800 border border-platinum-600 rounded-lg px-3 py-2 text-sm text-platinum-100 outline-none focus:border-blue-500"
-                            />
-                        </div>
-                        <div className="flex justify-end">
-                            <button onClick={() => setWifiMemo('')} className="text-xs text-red-400 hover:text-red-300 font-medium">
-                                削除
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* 初期設定をやり直すセクション（選択式セキュリティ） */}
-                    <div className="border-t border-platinum-700 pt-4">
-                        {!isResetting ? (
-                            <button 
-                                onClick={() => setIsResetting(true)}
-                                className="w-full bg-platinum-700 hover:bg-platinum-600 text-platinum-300 text-xs py-2 rounded-xl border border-platinum-600 transition"
-                            >
-                                ⚙️ 初期設定をやり直す（安全ロック保護）
-                            </button>
-                        ) : (
-                            <form onSubmit={handleReset} className="bg-platinum-900 p-4 rounded-xl border border-blue-500/50 space-y-3">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-xs font-bold text-blue-400">要塞の再初期化セキュリティ</span>
-                                    <button type="button" onClick={() => setIsResetting(false)} className="text-xs text-platinum-300 hover:text-white">✕ 閉じる</button>
+                    {/* 1. セットアップ画面 */}
+                    {!hasSetup ? (
+                        <form onSubmit={handleSetupSave} className="space-y-4">
+                            <div className="bg-platinum-900/60 p-4 rounded-xl border border-platinum-700 space-y-3">
+                                <h2 className="text-sm font-semibold text-platinum-100">🔐 初期セットアップ</h2>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-platinum-300">日常ダミー用パスワード</label>
+                                    <input 
+                                        type="password" 
+                                        placeholder="例: dummy123"
+                                        value={setupDummy}
+                                        onChange={(e) => setSetupDummy(e.target.value)}
+                                        className="w-full bg-platinum-800 border border-platinum-600 rounded-lg px-3 py-2 text-sm text-platinum-100 outline-none focus:border-blue-500"
+                                        required
+                                    />
                                 </div>
-
-                                {/* 認証方法の選択タブ（①パスワード or ③生体認証） */}
-                                <div className="grid grid-cols-2 gap-2 bg-platinum-800 p-1 rounded-lg">
-                                    <button
-                                        type="button"
-                                        onClick={() => setAuthMode('password')}
-                                        className={`text-xs py-1.5 rounded-md font-medium transition ${authMode === 'password' ? 'bg-blue-600 text-white' : 'text-platinum-300 hover:text-white'}`}
-                                    >
-                                        ① パスワード認証
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setAuthMode('biometric')}
-                                        className={`text-xs py-1.5 rounded-md font-medium transition ${authMode === 'biometric' ? 'bg-blue-600 text-white' : 'text-platinum-300 hover:text-white'}`}
-                                    >
-                                        ③ 生体認証
-                                    </button>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-platinum-300">本物用パスワード</label>
+                                    <input 
+                                        type="password" 
+                                        placeholder="例: secret999"
+                                        value={setupReal}
+                                        onChange={(e) => setSetupReal(e.target.value)}
+                                        className="w-full bg-platinum-800 border border-platinum-600 rounded-lg px-3 py-2 text-sm text-platinum-100 outline-none focus:border-blue-500"
+                                        required
+                                    />
                                 </div>
+                            </div>
+                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-3 rounded-xl transition">
+                                要塞を構築する
+                            </button>
+                        </form>
+                    ) : !isUnlocked ? (
+                        /* 2. ロック解除画面 */
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            <div className="bg-platinum-900/60 p-4 rounded-xl border border-platinum-700 space-y-3 text-center">
+                                <h2 className="text-sm font-semibold text-platinum-100">🔒 要塞ロック解除</h2>
+                                <p className="text-xs text-platinum-300">パスワードを入力してください</p>
+                                <input 
+                                    type="password" 
+                                    placeholder="パスワードを入力"
+                                    value={loginInput}
+                                    onChange={(e) => setLoginInput(e.target.value)}
+                                    className="w-full bg-platinum-800 border border-platinum-600 rounded-lg px-3 py-2 text-sm text-platinum-100 text-center outline-none focus:border-blue-500"
+                                    required
+                                />
+                            </div>
+                            <button type="submit" className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs py-3 rounded-xl transition">
+                                解除して入城する
+                            </button>
 
-                                {authMode === 'password' ? (
-                                    <div className="space-y-1">
-                                        <label className="text-xs text-platinum-300">本物用パスワードを入力</label>
-                                        <input 
-                                            type="password" 
-                                            placeholder="例: secret123"
-                                            value={passwordInput}
-                                            onChange={(e) => setPasswordInput(e.target.value)}
-                                            className="w-full bg-platinum-800 border border-platinum-600 rounded-lg px-3 py-2 text-sm text-platinum-100 outline-none focus:border-blue-500"
-                                            required
-                                        />
-                                        <p className="text-[10px] text-platinum-300">※画面破損などで指紋が使えないときも安心です。</p>
-                                    </div>
+                            {/* 初期設定リセットセクション（選択式） */}
+                            <div className="border-t border-platinum-700 pt-4">
+                               {!isResetting ? (
+                                    <button 
+                                        type="button"
+                                        onClick={() => setIsResetting(true)}
+                                        className="w-full bg-platinum-700 hover:bg-platinum-600 text-platinum-300 text-xs py-2 rounded-xl border border-platinum-600 transition"
+                                    >
+                                        ⚙️ 初期設定をやり直す（安全ロック保護）
+                                    </button>
                                 ) : (
-                                    <div className="text-center py-2 space-y-2">
-                                        <p className="text-xs text-platinum-300">端末の指紋認証・顔認証を呼び出します</p>
-                                        <div className="text-2xl">👆 📱</div>
+                                    <div className="bg-platinum-900 p-4 rounded-xl border border-blue-500/50 space-y-3">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-xs font-bold text-blue-400">要塞の再初期化セキュリティ</span>
+                                            <button type="button" onClick={() => setIsResetting(false)} className="text-xs text-platinum-300 hover:text-white">✕ 閉じる</button>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2 bg-platinum-800 p-1 rounded-lg">
+                                            <button
+                                                type="button"
+                                                onClick={() => setAuthMode('password')}
+                                                className={`text-xs py-1.5 rounded-md font-medium transition ${authMode === 'password' ? 'bg-blue-600 text-white' : 'text-platinum-300'}`}
+                                            >
+                                                ① パスワード
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setAuthMode('biometric')}
+                                                className={`text-xs py-1.5 rounded-md font-medium transition ${authMode === 'biometric' ? 'bg-blue-600 text-white' : 'text-platinum-300'}`}
+                                            >
+                                                ③ 生体認証
+                                            </button>
+                                        </div>
+
+                                        {authMode === 'password' ? (
+                                            <div className="space-y-1">
+                                                <label className="text-xs text-platinum-300">本物用パスワードを入力</label>
+                                                <input 
+                                                    type="password" 
+                                                    placeholder="本物用パスワード"
+                                                    value={resetPasswordInput}
+                                                    onChange={(e) => setResetPasswordInput(e.target.value)}
+                                                    className="w-full bg-platinum-800 border border-platinum-600 rounded-lg px-3 py-2 text-sm text-platinum-100 outline-none"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="text-center py-2 text-xs text-platinum-300">
+                                                指紋・顔認証で本人確認を行います 👆📱
+                                            </div>
+                                        )}
+
+                                        <button 
+                                            type="button"
+                                            onClick={handleResetExecute}
+                                            className="w-full bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2 rounded-lg transition"
+                                        >
+                                            認証して初期化を実行する
+                                        </button>
                                     </div>
                                 )}
+                            </div>
+                        </form>
+                    ) : (
+                        /* 3. メインアプリ画面 */
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between bg-platinum-700/50 p-3 rounded-xl border border-platinum-600">
+                                <div className="flex items-center space-x-2">
+                                    <span className={`w-3 h-3 rounded-full ${mode === 'real' ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`}></span>
+                                    <span className="text-sm font-medium">{mode === 'real' ? '🔒 要塞防衛モード' : '🟢 日常モード'}</span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <button 
+                                        onClick={() => setShowWarning(!showWarning)}
+                                        className="bg-platinum-600 hover:bg-platinum-500 text-xs px-3 py-1.5 rounded-lg font-medium transition"
+                                    >
+                                        ⚠️ 警告切替
+                                    </button>
+                                    <button 
+                                        onClick={() => setIsUnlocked(false)}
+                                        className="bg-platinum-600 hover:bg-platinum-500 text-xs px-3 py-1.5 rounded-lg font-medium transition"
+                                    >
+                                        🔒 ロック
+                                    </button>
+                                </div>
+                            </div>
 
-                                <button 
-                                    type="submit"
-                                    className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 rounded-lg transition"
-                                >
-                                    認証して初期化を実行する
-                                </button>
-                            </form>
-                        )}
-                    </div>
+                            <div className="bg-platinum-900/60 border border-platinum-700/60 rounded-xl p-4 space-y-3">
+                                <h2 className="text-sm font-semibold text-platinum-300">
+                                    {mode === 'real' ? '🔒 機密情報（本物要塞）' : '📁 日常のメモ'}
+                                </h2>
+                                <input 
+                                    type="text" 
+                                    value={mode === 'real' ? secretMemo : wifiMemo} 
+                                    onChange={(e) => mode === 'real' ? setSecretMemo(e.target.value) : setWifiMemo(e.target.value)}
+                                    className="w-full bg-platinum-800 border border-platinum-600 rounded-lg px-3 py-2 text-sm text-platinum-100 outline-none"
+                                />
+                            </div>
+                        </div>
+                    )}
 
                 </div>
             );
