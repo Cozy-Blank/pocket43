@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>PWA Icon Design Proposals</title>
+  <style>
+    body { background: #e2e8f0; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .container { display: flex; gap: 32px; background: white; padding: 40px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    .card { text-align: center; }
+    .card p { margin-top: 12px; font-weight: bold; color: #475569; font-size: 14px; }
+    svg { border-radius: 22.5%; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- 案① ミニマル・シンボル -->
+  <div class="card">
+    <svg width="180" height="180" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="512" height="512" rx="115" fill="#F1F5F9"/>
+      <!-- パズルピクトグラム -->
+      <path d="M216 160C216 142.327 230.327 128 248 128C265.673 128 280 142.327 280 160V184H328C345.673 184 360 198.327 360 216V264H384C401.673 264 416 278.327 416 296C416 313.673 401.673 328 384 328H360V376C360 393.673 345.673 408 328 408H280V384C280 366.327 265.673 352 248 352C230.327 352 216 366.327 216 384V408H168C150.327 408 136 393.673 136 376V328H160C177.673 328 192 313.673 192 296C192 278.327 177.673 264 160 264H136V216C136 198.327 150.327 184 168 184H216V160Z" fill="#1E293B"/>
+      <!-- ロゴ文字 -->
+      <text x="256" y="450" font-family="'Helvetica Neue', sans-serif" font-size="32" font-weight="700" fill="#64748B" text-anchor="middle" letter-spacing="4">WATASI</text>
+    </svg>
+    <p>① ミニマル・シンボル</p>
+  </div>
+
+  <!-- 案② ニュアンス・カラーブロック -->
+  <div class="card">
+    <svg width="180" height="180" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="512" height="512" rx="115" fill="#E07A5F"/>
+      <!-- 白抜きハートシンボル -->
+      <path d="M256 390L222.6 359.6C104 252 128 170 180 142C218 121.5 248 140 256 150C264 140 294 121.5 332 142C384 170 408 252 289.4 359.6L256 390Z" fill="#FFFFFF"/>
+      <!-- ロゴ文字 -->
+      <text x="256" y="440" font-family="'Helvetica Neue', sans-serif" font-size="34" font-weight="700" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">SUKI LOG</text>
+    </svg>
+    <p>② ニュアンス・カラー</p>
+  </div>
+
+  <!-- 案③ クラフト・スタンプ -->
+  <div class="card">
+    <svg width="180" height="180" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="512" height="512" rx="115" fill="#FAF7F2"/>
+      <!-- 破線スタンプ枠 -->
+      <rect x="48" y="48" width="416" height="416" rx="80" stroke="#5C3D2E" stroke-width="12" stroke-dasharray="24 16"/>
+      <!-- パレット風アイコン -->
+      <path d="M256 140C180 140 120 190 120 260C120 310 155 350 200 350C215 350 225 340 225 328C225 320 220 312 220 302C220 288 232 276 246 276H280C330 276 370 240 370 190C370 160 320 140 256 140Z" fill="#D97757"/>
+      <circle cx="180" cy="200" r="16" fill="#FAF7F2"/>
+      <circle cx="230" cy="180" r="16" fill="#FAF7F2"/>
+      <circle cx="285" cy="195" r="16" fill="#FAF7F2"/>
+      <!-- 手書き風ひらがなテキスト -->
+      <text x="256" y="415" font-family="sans-serif" font-size="32" font-weight="bold" fill="#5C3D2E" text-anchor="middle">わたしろぐ</text>
+    </svg>
+    <p>③ クラフト・スタンプ</p>
+  </div>
+</div>
+
+</body>
+</html>
