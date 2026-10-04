@@ -63,7 +63,7 @@
                 }
             }, []);
 
-            // 初回セットアップ保存（本物パスワードは英数含め8文字以上を必須化）
+            // 初回セットアップ保存
             const handleSetupSave = (e) => {
                 e.preventDefault();
                 if (!setupDummy || !setupReal) {
@@ -74,7 +74,6 @@
                     alert('ダミーと本物のパスワードは別のものにしてください！');
                     return;
                 }
-                // 本物パスワードのバリデーション：8文字以上かつ英字と数字の両方を含む
                 const hasLetter = /[a-zA-Z]/.test(setupReal);
                 const hasNumber = /[0-9]/.test(setupReal);
                 if (setupReal.length < 8 || !hasLetter || !hasNumber) {
@@ -82,17 +81,16 @@
                     return;
                 }
 
-                // 生体認証シミュレーションを必須クリア
-                const bioSuccess = confirm('要塞の防衛力を高めるため、初期設定時に生体認証（指紋/顔）の登録・確認を行います。よろしいですか？');
+                const bioSuccess = confirm('要塞の防衛力を高めるため、初期設定時に生体認証の確認を行います。よろしいですか？');
                 if (!bioSuccess) {
-                    alert('生体認証の確認が取れなかったため、初期設定を中断しました。');
+                    alert('初期設定を中断しました。');
                     return;
                 }
 
                 localStorage.setItem('pocket_dummy', setupDummy);
                 localStorage.setItem('pocket_real', setupReal);
                 setHasSetup(true);
-                alert('要塞の初期セットアップが完了しました！');
+                alert('初期セットアップが完了しました！');
             };
 
             // ログイン判定
@@ -106,7 +104,7 @@
                     setIsUnlocked(true);
                     setLoginInput('');
                 } else if (loginInput === savedReal) {
-                    const bioCheck = confirm('【要塞防衛】本物モードにアクセスします。生体認証（指紋/顔）を行いますか？');
+                    const bioCheck = confirm('【要塞防衛】本物モードにアクセスします。生体認証を行いますか？');
                     if (bioCheck) {
                         setMode('real');
                         setIsUnlocked(true);
@@ -119,7 +117,7 @@
                 }
             };
 
-            // リセット実行（生体認証か本物パスワードの選択式・どちらか必須）
+            // リセット実行
             const handleResetExecute = (e) => {
                 e.preventDefault();
                 if (authMode === 'password') {
@@ -139,22 +137,21 @@
                         alert('本物用パスワードが違います！');
                     }
                 } else {
-                    const bioConfirm = confirm('【生体認証リセット】端末の生体認証（指紋/顔）による本人確認を行います。');
+                    const bioConfirm = confirm('【生体認証リセット】端末の生体認証による本人確認を行います。');
                     if (bioConfirm) {
                         localStorage.clear();
                         setHasSetup(false);
                         setIsUnlocked(false);
                         setIsResetting(false);
-                        alert('生体認証による本人確認が成功し、初期設定を完全にリセットしました。');
+                        alert('初期設定を完全にリセットしました。');
                     } else {
                         alert('生体認証がキャンセルされました。');
                     }
                 }
             };
 
-            // 強制リセット（デバッグ・初期化用）
             const forceHardReset = () => {
-                if (confirm('【強制リセット】保存されているすべてのデータを消去して最初の初期設定画面に戻しますか？')) {
+                if (confirm('【強制リセット】データをすべて消去して初期設定画面に戻しますか？')) {
                     localStorage.clear();
                     setHasSetup(false);
                     setIsUnlocked(false);
@@ -166,20 +163,38 @@
             return (
                 <div className="w-full max-w-md bg-platinum-800 border border-platinum-700 rounded-2xl shadow-2xl overflow-hidden p-6 space-y-6">
                     
-                    {/* ヘッダー */}
-                    <div className="text-center space-y-1">
-                        <div className="flex justify-center items-center space-x-2 text-blue-400 font-bold text-xl">
-                            <span>🛡️</span>
-                            <h1>ポケット要塞</h1>
+                    {/* 動的イラスト＆バナー切り替え部分 */}
+                    {isUnlocked && mode === 'real' ? (
+                        /* 本物（要塞防衛モード）のとき：王がいるイラスト (ari_nobg.webp) */
+                        <div className="text-center space-y-2 bg-gradient-to-r from-red-950 via-platinum-800 to-red-950 p-4 rounded-xl border border-red-600 shadow-inner">
+                            <div className="w-full h-36 overflow-hidden rounded-lg bg-black/40 flex items-center justify-center border border-red-500/40">
+                                <img src="ari_nobg.webp" alt="要塞防衛・王のいる城" className="w-full h-full object-contain filter drop-shadow-md" />
+                            </div>
+                            <div className="flex justify-center items-center space-x-2 text-red-400 font-bold text-lg animate-pulse">
+                                <span>🚨</span>
+                                <h1>要塞防衛コマンド（本物）</h1>
+                            </div>
+                            <p className="text-xs text-red-200">【機密保持中】厳戒態勢エリア</p>
                         </div>
-                        <p className="text-xs text-platinum-300">オフライン完全ローカル・プレミアム防衛版</p>
-                    </div>
+                    ) : (
+                        /* ダミー（日常モード）または初期設定のとき：主がいないイラスト (nasi_nobg.webp) */
+                        <div className="text-center space-y-2 bg-gradient-to-r from-blue-950 via-platinum-800 to-blue-950 p-4 rounded-xl border border-blue-500/50 shadow-inner">
+                            <div className="w-full h-36 overflow-hidden rounded-lg bg-black/40 flex items-center justify-center border border-blue-500/30">
+                                <img src="nasi_nobg.webp" alt="日常メモ・主のいない城" className="w-full h-full object-contain filter drop-shadow-md" />
+                            </div>
+                            <div className="flex justify-center items-center space-x-2 text-blue-400 font-bold text-lg">
+                                <span>🛡️</span>
+                                <h1>ポケット要塞</h1>
+                            </div>
+                            <p className="text-xs text-platinum-300">オフライン完全ローカル・日常メモ版</p>
+                        </div>
+                    )}
 
                     {/* VSCodeチェック時のみ表示する赤文字の警告 */}
                     {showWarning && (
                         <div className="bg-red-950/80 border border-red-600 rounded-xl p-3 text-xs text-red-200 flex items-start space-x-2 animate-pulse">
                             <span>⚠️</span>
-                            <p>【警告】古いバージョン（または未更新のセキュリティパッチ）を検知しました。お兄さんと相談して最新コードにアップデートしてください！</p>
+                            <p>【警告】古いバージョンを検知しました。お兄さんと相談して最新コードにアップデートしてください！</p>
                         </div>
                     )}
 
@@ -190,7 +205,7 @@
                                 <h2 className="text-sm font-semibold text-platinum-100">🔐 初回セキュリティ設定</h2>
                                 
                                 <div className="space-y-1">
-                                    <label className="text-xs text-platinum-300">日常ダミー用パスワード <span className="text-platinum-300">（桁数制限なし・自由）</span></label>
+                                    <label className="text-xs text-platinum-300">日常ダミー用パスワード <span className="text-platinum-300">（自由）</span></label>
                                     <input 
                                         type="password" 
                                         placeholder="例: dummy123"
@@ -211,11 +226,6 @@
                                         className="w-full bg-platinum-800 border border-platinum-600 rounded-lg px-3 py-2 text-sm text-platinum-100 outline-none focus:border-blue-500"
                                         required
                                     />
-                                </div>
-
-                                <div className="bg-platinum-800 p-3 rounded-lg border border-platinum-700 text-center space-y-1">
-                                    <p className="text-xs font-medium text-platinum-300">👆 生体認証の紐付け</p>
-                                    <p className="text-[10px] text-platinum-300">※「要塞を構築する」を押すとデバイスの生体認証確認が実行されます。</p>
                                 </div>
                             </div>
 
@@ -242,7 +252,7 @@
                                 解除して入城する
                             </button>
 
-                            {/* 初期設定リセットセクション（選択式：必須） */}
+                            {/* 初期設定リセットセクション */}
                             <div className="border-t border-platinum-700 pt-4">
                                {!isResetting ? (
                                     <button 
@@ -270,48 +280,7 @@
                                             <button
                                                 type="button"
                                                 onClick={() => setAuthMode('biometric')}
-                                                className={`text-xs py-1.5 rounded-md font-medium transition ${authMode === 'biometric' ? 'bg-blue-600 text-white' : 'text-platinum-300'}`}
-                                            >
-                                                生体認証
-                                            </button>
-                                        </div>
-
-                                        {authMode === 'password' ? (
-                                            <div className="space-y-1">
-                                                <label className="text-xs text-platinum-300">本物用パスワードを入力（必須）</label>
-                                                <input 
-                                                    type="password" 
-                                                    placeholder="本物用パスワード"
-                                                    value={resetPasswordInput}
-                                                    onChange={(e) => setResetPasswordInput(e.target.value)}
-                                                    className="w-full bg-platinum-800 border border-platinum-600 rounded-lg px-3 py-2 text-sm text-platinum-100 outline-none"
-                                                    required
-                                                />
-                                            </div>
-                                        ) : (
-                                            <div className="text-center py-2 text-xs text-platinum-300 space-y-1">
-                                                <p>端末の生体認証（指紋/顔）で本人確認を行います</p>
-                                                <p className="text-[10px] text-blue-400">※クリアしないと初期化できません</p>
-                                            </div>
-                                        )}
-
-                                        <button 
-                                            type="button"
-                                            onClick={handleResetExecute}
-                                            className="w-full bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2 rounded-lg transition"
-                                        >
-                                            認証して初期化を実行する
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </form>
-                    ) : (
-                        /* 3. メインアプリ画面 */
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between bg-platinum-700/50 p-3 rounded-xl border border-platinum-600">
-                                <div className="flex items-center space-x-2">
-                                    <span className={`w-3 h-3 rounded-full ${mode === 'real' ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`}></span>
+                                                className={`text-xs py-1.5 rounded-md font-medium transition ${authMode === 'biometric' ? 'bg-blue-600 text-white' : 'text-platinum-300'}`}                                             >                                                 生体認証                                             </button>                                         </div>                                          {authMode === 'password' ? (                                             <div className="space-y-1">                                                 <label className="text-xs text-platinum-300">本物用パスワードを入力（必須）</label>                                                 <input                                                      type="password"                                                      placeholder="本物用パスワード"                                                     value={resetPasswordInput}                                                     onChange={(e) => setResetPasswordInput(e.target.value)}                                                     className="w-full bg-platinum-800 border border-platinum-600 rounded-lg px-3 py-2 text-sm text-platinum-100 outline-none"                                                     required                                                 />                                             </div>                                         ) : (                                             <div className="text-center py-2 text-xs text-platinum-300 space-y-1">                                                 <p>端末の生体認証で本人確認を行います</p>                                                 <p className="text-[10px] text-blue-400">※クリアしないと初期化できません</p>                                             </div>                                         )}                                          <button                                              type="button"                                             onClick={handleResetExecute}                                             className="w-full bg-red-600 hover:bg-red-500 text-white text-xs font-bold py-2 rounded-lg transition"                                         >                                             認証して初期化を実行する                                         </button>                                     </div>                                 )}                             </div>                         </form>                     ) : (                         /* 3. メインアプリ画面（ダミー vs 本物） */                         <div className="space-y-4">                             <div className="flex items-center justify-between bg-platinum-700/50 p-3 rounded-xl border border-platinum-600">                                 <div className="flex items-center space-x-2">                                     <span className={`w-3 h-3 rounded-full ${mode === 'real' ? 'bg-red-500 animate-pulse' : 'bg-green-500'}`}></span>
                                     <span className="text-sm font-medium">{mode === 'real' ? '🔒 要塞防衛モード' : '🟢 日常モード'}</span>
                                 </div>
                                 <div className="flex items-center space-x-2">
