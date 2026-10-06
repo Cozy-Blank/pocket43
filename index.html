@@ -44,7 +44,6 @@
             margin: 0;
         }
 
-        /* 本物・ダミー表記を目立たないカードの隅へ控えめに配置 */
         .badge {
             font-size: 0.75rem;
             padding: 2px 8px;
@@ -57,7 +56,39 @@
         .subtitle {
             color: var(--muted-text);
             font-size: 0.9rem;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* 認証エリア（パスワード・切替用） */
+        .auth-box {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .auth-box input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #2D1B4E;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .auth-box button {
+            background-color: var(--main-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
         }
 
         .card {
@@ -98,12 +129,12 @@
             align-items: center;
         }
 
-        /* 視認性を劇的に上げた直感的なロックアイコンボタン */
+        /* 視認性を上げたロックアイコン */
         .lock-btn {
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             padding: 4px;
             transition: transform 0.2s;
         }
@@ -128,19 +159,24 @@
     <div class="container">
         <div class="header-area">
             <h1>機密の地下水脈</h1>
-            <span class="badge">Secure Core</span>
+            <span class="badge" id="modeBadge">Secure Core</span>
         </div>
         <p class="subtitle">安全にデータを管理・編集できます。</p>
+
+        <!-- パスワード認証・切り替えエリア -->
+        <div class="auth-box">
+            <input type="password" id="passInput" placeholder="パスワードを入力（本物/ダミー切替）">
+            <button onclick="checkPassword()">認証</button>
+        </div>
 
         <div class="card">
             <!-- 項目1 -->
             <div class="item-box">
                 <div class="item-info">
                     <label>マイナンバー</label>
-                    <span>1234-5678-9012</span>
+                    <span id="data1">1234-5678-9012</span>
                 </div>
                 <div class="action-group">
-                    <!-- ロック状態がひと目でわかるアイコン（🔓 開 / 🔒 閉） -->
                     <button class="lock-btn" id="lockBtn1" onclick="toggleLock(1)">🔓</button>
                     <button class="delete-btn">削除</button>
                 </div>
@@ -150,7 +186,7 @@
             <div class="item-box">
                 <div class="item-info">
                     <label>健康保険証</label>
-                    <span>A12-B34-C56</span>
+                    <span id="data2">A12-B34-C56</span>
                 </div>
                 <div class="action-group">
                     <button class="lock-btn" id="lockBtn2" onclick="toggleLock(2)">🔒</button>
@@ -161,7 +197,7 @@
     </div>
 
     <script>
-        // ロック状態を切り替える簡単なJavaScript
+        // ロックアイコンの切り替え（🔓 ⇔ 🔒）
         function toggleLock(id) {
             const btn = document.getElementById('lockBtn' + id);
             if (btn.innerText === '🔒') {
@@ -169,6 +205,25 @@
             } else {
                 btn.innerText = '🔒';
             }
+        }
+
+        // パスワード認証のサンプル処理（必要に応じてパスワードや動作を書き換えてね）
+        function checkPassword() {
+            const pass = document.getElementById('passInput').value;
+            const badge = document.getElementById('modeBadge');
+            
+            if (pass === '1234') { // 例としての本物パスワード
+                badge.innerText = '【本物モード】';
+                badge.style.borderColor = '#84CC16';
+                badge.style.color = '#84CC16';
+                alert('本物モードに切り替わりました');
+            } else {
+                badge.innerText = '【ダミーモード】';
+                badge.style.borderColor = '#A855F7';
+                badge.style.color = '#A855F7';
+                alert('ダミーモードとして作動します');
+            }
+            document.getElementById('passInput').value = '';
         }
     </script>
 </body>
