@@ -29,7 +29,7 @@
         }
         .container {
             width: 100%;
-            max-width: 480px; /* スマホ画面幅に最適化 */
+            max-width: 480px;
             min-height: 100vh;
             background-color: var(--bg-color);
             display: flex;
@@ -51,15 +51,14 @@
         }
         /* イラストを横全般にカバー＆比率維持・タップ可能に */
         .img-container {
-            width: 100%;
-            margin: -16px -16px 16px -16px; /* カードのパディングを相殺して端まで広げる */
             width: calc(100% + 32px);
+            margin: -16px -16px 16px -16px;
             border-top-left-radius: 12px;
             border-top-right-radius: 12px;
             overflow: hidden;
             text-align: center;
             background: #000;
-            cursor: pointer; /* タップできることがわかるように */
+            cursor: pointer;
             position: relative;
         }
         .img-container img {
@@ -101,7 +100,7 @@
             border-radius: 8px;
             color: var(--text-color);
             box-sizing: border-box;
-            font-size: 1rem; /* スマホでタップしやすいサイズ */
+            font-size: 1rem;
         }
         button {
             background-color: var(--accent-color);
@@ -169,9 +168,8 @@
                 <img id="lock-img" src="23_nobg.webp" alt="要塞画像">
             </div>
 
-            <!-- 初期設定・初回セット用エリア -->
             <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color); margin-bottom: 15px;">
-                <h3 style="font-size: 0.95rem; margin-bottom: 8px;">⚙️ 初回または変更のパスワード設定</h3>
+                <h3 style="font-size: 0.95rem; margin-bottom: 8px;">⚙️️ 初回または変更のパスワード設定</h3>
                 <label style="font-size: 0.8rem; color: var(--text-muted);">ダミー用パスワード</label>
                 <input type="text" id="set-dummy-input" placeholder="例: 1234">
                 <label style="font-size: 0.8rem; color: var(--text-muted);">本物用パスワード（英数8文字以上）</label>
@@ -189,7 +187,6 @@
 
             <hr style="border:0; border-top:1px solid var(--border-color); margin: 20px 0;">
             
-            <!-- パスワードリセット領域 -->
             <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
                 <h3 style="font-size: 0.95rem; margin-bottom: 8px;">🔄 パスワードリセット</h3>
                 <select id="reset-method">
@@ -216,9 +213,8 @@
             </div>
         </div>
 
-        <!-- 🏰 メイン要塞内部（ダミー / 本物共通） -->
+        <!-- 🏰 メイン要塞内部 -->
         <div id="main-screen" class="card hidden" style="padding-top: 0;">
-            <!-- イラストタップでロック画面に戻る -->
             <div class="img-container" onclick="lockFortress()" title="タップしてロック画面に戻る">
                 <img id="main-img" src="" alt="要塞メイン画像">
             </div>
@@ -269,7 +265,7 @@
                 fortressData.realPass = rInput;
             }
             localStorage.setItem('pocket_fortress_v6', JSON.stringify(fortressData));
-            alert('⚙️ パスワードの設定・更新が完了しました！');
+            alert('⚙️️ パスワードの設定・更新が完了しました！');
             document.getElementById('set-real-input').value = '';
         }
 
@@ -409,7 +405,8 @@
             });
 
             const addGenreBox = document.createElement('div');
-            addGenreBox.style.cssText = "background: #1e293b; padding: 14px; border-radius: 8px; border: 1px dashed var(--border-color); margin-top: 15px;";
+            addGradeBoxStyle = "background: #1e293b; padding: 14px; border-radius: 8px; border: 1px dashed var(--border-color); margin-top: 15px;";
+            addGenreBox.style.cssText = addGradeBoxStyle;
             addGenreBox.innerHTML = `
                 <h4 style="margin-top:0; color: var(--text-color); font-size: 0.95rem;">新しいジャンルを作成</h4>
                 <input type="text" id="new-genre-title" placeholder="例: クレジットカード等">
