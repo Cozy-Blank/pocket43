@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ポケット要塞 - 最終完全版</title>
+    <title>ポケット要塞 - 最終セキュリティ版</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -15,6 +15,7 @@
             --accent-hover: #2563eb;
             --danger-color: #ef4444;
             --warning-color: #f59e0b;
+            --success-color: #10b981;
         }
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -78,10 +79,10 @@
         .btn-secondary:hover { background-color: #334155; }
         .btn-danger { background-color: var(--danger-color); width: auto; padding: 5px 10px; font-size: 0.85rem; }
         .btn-warning { background-color: var(--warning-color); width: auto; padding: 5px 10px; font-size: 0.85rem; color: #000; }
+        .btn-success { background-color: var(--success-color); }
         .hidden { display: none; }
         .badge { font-size: 0.8rem; background: #334155; padding: 2px 8px; border-radius: 4px; color: var(--text-muted); }
         
-        /* 秘匿データの隠しクラス */
         .masked-val {
             background-color: #334155;
             color: #334155;
@@ -118,35 +119,54 @@
     <div class="container">
         <!-- 🔐 ロック画面 -->
         <div id="lock-screen" class="card">
+            <!-- イラストの下にダミーと本物の設定エリア -->
             <div class="img-container">
-                <!-- 初期表示はダミー用の主がいない画像 -->
                 <img id="lock-img" src="23_nobg.webp" alt="要塞画像">
             </div>
+
+            <!-- 初期設定・初回セット用エリア -->
+            <div style="background: #0f172a; padding: 12px; border-radius: 6px; border: 1px dashed var(--border-color); margin-bottom: 15px;">
+                <h3 style="font-size: 0.95rem; margin-bottom: 8px;">⚙️ 初回または変更のパスワード設定</h3>
+                <label style="font-size: 0.8rem; color: var(--text-muted);">ダミー用パスワード（自由）</label>
+                <input type="text" id="set-dummy-input" placeholder="例: 1234">
+                <label style="font-size: 0.8rem; color: var(--text-muted);">本物用パスワード（英数含む8文字以上）</label>
+                <input type="password" id="set-real-input" placeholder="例: Fortress99!">
+                <button class="btn-success" onclick="saveInitialPasswords()" style="font-size: 0.85rem; padding: 8px;">パスワードを登録・更新する</button>
+            </div>
+
             <h1>🛡️ ポケット要塞</h1>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">パスワード（または生体認証）で開錠してください。</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">パスワードを入力してください（本物パスワードの後は生体認証が必要です）。</p>
             
             <label>パスワード入力</label>
             <input type="password" id="pass-input" placeholder="パスワードを入力">
-            <button onclick="unlockFortress('password')">パスワードで要塞を開錠</button>
-            
-            <button class="btn-secondary" onclick="unlockFortress('bio')">👆 生体認証シミュレーションで開錠</button>
+            <button onclick="tryUnlock()">要塞を開錠する</button>
             <p id="error-msg" style="color: var(--danger-color); font-size: 0.85rem; display: none;"></p>
 
             <hr style="border:0; border-top:1px solid var(--border-color); margin: 20px 0;">
             
             <!-- パスワードリセット領域 -->
             <div style="background: #0f172a; padding: 12px; border-radius: 6px; border: 1px dashed var(--border-color);">
-                <h3 style="font-size: 0.95rem; margin-bottom: 8px;">🔄 パスワードリセット / 初期設定</h3>
-                <p style="font-size: 0.8rem; color: var(--text-muted);">忘れた場合は「本物パスワード」または「生体認証」でリセットできます。</p>
+                <h3 style="font-size: 0.95rem; margin-bottom: 8px;">🔄 パスワードリセット</h3>
                 <select id="reset-method">
                     <option value="bio">生体認証でリセットする</option>
                     <option value="real">本物パスワードでリセットする</option>
                 </select>
                 <input type="password" id="reset-auth-input" placeholder="確認用パスワード または 生体認証">
+                <input type="text" id="new-dummy-pass" placeholder="新しいダミーパスワード">
                 <input type="password" id="new-real-pass" placeholder="新しい本物パスワード（英数8文字以上）">
-                <input type="text" id="new-dummy-pass" placeholder="新しいダミーパスワード（自由）">
                 <button class="btn-warning" onclick="resetPasswords()">パスワードを再設定する</button>
             </div>
+        </div>
+
+        <!-- 👆 生体認証モーダル（本物パスワード入力後に割り込み表示） -->
+        <div id="bio-modal" class="card hidden" style="border: 2px solid var(--accent-color);">
+            <div class="img-container">
+                <img src="24_nobg.webp" alt="本物の主" style="max-width: 100px;">
+            </div>
+            <h2>🔒 本物セキュリティ確認</h2>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">本物パスワードを確認しました。最終確認のため生体認証を実行してください。</p>
+            <button class="btn-success" onclick="completeBioAuth()" style="padding: 15px; font-size: 1rem; margin-top: 10px;">👆 生体認証シミュレーションをクリア</button>
+            <button class="btn-secondary" onclick="cancelBioAuth()" style="margin-top: 10px;">キャンセルして戻る</button>
         </div>
 
         <!-- 🏰 メイン要塞内部 -->
@@ -164,17 +184,16 @@
             <button onclick="saveData()" style="margin-bottom: 10px;">💾 変更をすべて保存する</button>
             <button class="btn-secondary" onclick="exportData()" style="background-color: #0d9488; margin-bottom: 5px;">📥 データをバックアップ (JSON)</button>
             <button class="btn-secondary" onclick="lockFortress()" style="background-color: #64748b; margin-bottom: 5px;">🔒 要塞をロックする</button>
-            <button class="btn-danger" onclick="clearAllData()" style="width: 100%; margin-top: 10px;">⚠️ 全データを完全消去する</button>
+            <button class="btn-danger" onclick="clearAllData()" style="width: 100%; margin-top: 10px;">⚠️️ 全データを完全消去する</button>
         </div>
     </div>
 
     <script>
-        // 初期データの定義
-        let fortressData = JSON.parse(localStorage.getItem('pocket_fortress_v4')) || {
+        let fortressData = JSON.parse(localStorage.getItem('pocket_fortress_v5')) || {
             dummyPass: '1234',
             realPass: 'Fortress99!',
             dummyGenres: [
-                { name: 'Wi-Fi・よく行くお店', items: [{ title: '自宅Wi-Fi', val: 'abcd-1234', locked: false }, { title: 'お気に入りカフェ', val: 'cafe-member-99', locked: false }] },
+                { name: 'Wi-Fi・よく行くお店', items: [{ title: '自宅Wi-Fi', val: 'abcd-1234', locked: false }] },
                 { name: '診察券', items: [{ title: '内科クリニック', val: 'Card No. 4567', locked: false }] }
             ],
             realGenres: [
@@ -183,25 +202,42 @@
             ]
         };
 
-        let currentMode = null; // 'dummy' または 'real'
+        // 起動時に設定欄へ現在の値を反映
+        window.onload = function() {
+            document.getElementById('set-dummy-input').value = fortressData.dummyPass;
+        };
 
-        function unlockFortress(type) {
+        function saveInitialPasswords() {
+            const dInput = document.getElementById('set-dummy-input').value;
+            const rInput = document.getElementById('set-real-input').value;
+
+            if (dInput) fortressData.dummyPass = dInput;
+            if (rInput) {
+                const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+                if (!regex.test(rInput)) {
+                    return alert('本物パスワードは英字と数字を含めた8文字以上にしてください！');
+                }
+                fortressData.realPass = rInput;
+            }
+            localStorage.setItem('pocket_fortress_v5', JSON.stringify(fortressData));
+            alert('⚙️ パスワードの設定・更新が完了しました！');
+            document.getElementById('set-real-input').value = '';
+        }
+
+        let pendingMode = null;
+
+        function tryUnlock() {
             const input = document.getElementById('pass-input').value;
             const errorMsg = document.getElementById('error-msg');
             errorMsg.style.display = 'none';
 
-            if (type === 'bio') {
-                // 生体認証成功時は本物モードへ
-                currentMode = 'real';
-                showMain();
-                return;
-            }
-
             if (input === fortressData.realPass) {
-                currentMode = 'real';
-                showMain();
+                // 本物パスワード一致 -> すぐに入らせず「生体認証モーダル」を挟む
+                document.getElementById('lock-screen').classList.add('hidden');
+                document.getElementById('bio-modal').classList.remove('hidden');
             } else if (input === fortressData.dummyPass) {
-                currentMode = 'dummy';
+                // ダミーパスワード一致 -> そのままダミー要塞へ
+                pendingMode = 'dummy';
                 showMain();
             } else {
                 errorMsg.innerText = "パスワードが違います。";
@@ -209,17 +245,30 @@
             }
         }
 
+        function completeBioAuth() {
+            document.getElementById('bio-modal').classList.add('hidden');
+            pendingMode = 'real';
+            showMain();
+        }
+
+        function cancelBioAuth() {
+            document.getElementById('bio-modal').classList.add('hidden');
+            document.getElementById('lock-screen').classList.remove('hidden');
+            document.getElementById('pass-input').value = '';
+        }
+
         function resetPasswords() {
             const method = document.getElementById('reset-method').value;
             const authInput = document.getElementById('reset-auth-input').value;
-            const newReal = document.getElementById('new-real-pass').value;
             const newDummy = document.getElementById('new-dummy-pass').value;
+            const newReal = document.getElementById('new-real-pass').value;
 
             if (method === 'real' && authInput !== fortressData.realPass) {
                 return alert('本物パスワードが違います。');
             }
-            // 生体認証リセットのときはauthInputチェックをパス
+            // 生体認証リセット選択時はそのままOK
 
+            if (newDummy) fortressData.dummyPass = newDummy;
             if (newReal) {
                 const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
                 if (!regex.test(newReal)) {
@@ -227,25 +276,24 @@
                 }
                 fortressData.realPass = newReal;
             }
-            if (newDummy) {
-                fortressData.dummyPass = newDummy;
-            }
 
-            localStorage.setItem('pocket_fortress_v4', JSON.stringify(fortressData));
-            alert('🔄 パスワードを正常に再設定しました！');
+            localStorage.setItem('pocket_fortress_v5', JSON.stringify(fortressData));
+            alert('🔄 パスワードを再設定しました！');
             document.getElementById('reset-auth-input').value = '';
-            document.getElementById('new-real-pass').value = '';
             document.getElementById('new-dummy-pass').value = '';
+            document.getElementById('new-real-pass').value = '';
+            document.getElementById('set-dummy-input').value = fortressData.dummyPass;
         }
 
         function showMain() {
             document.getElementById('lock-screen').classList.add('hidden');
+            document.getElementById('bio-modal').classList.add('hidden');
             document.getElementById('main-screen').classList.remove('hidden');
             
             const badge = document.getElementById('mode-badge');
             const mainImg = document.getElementById('main-img');
 
-            if (currentMode === 'real') {
+            if (pendingMode === 'real') {
                 badge.innerText = "【本物要塞モード】";
                 badge.style.background = "#2563eb";
                 mainImg.src = "24_nobg.webp"; // 主がいる画像
@@ -268,7 +316,7 @@
             const container = document.getElementById('content-area');
             container.innerHTML = '';
 
-            const genres = currentMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+            const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
 
             genres.forEach((genre, gIndex) => {
                 const gBox = document.createElement('div');
@@ -289,10 +337,9 @@
                     const iDiv = document.createElement('div');
                     iDiv.className = 'dynamic-item';
                     
-                    // 本物モードの場合は最初は隠す（masked-val）、ダミーまたはロック解除時は表示
                     let valDisplayHTML = '';
-                    if (currentMode === 'real' && !item.unlocked) {
-                        valDisplayHTML = `<span class="masked-val" onclick="toggleMask(this, ${gIndex}, ${iIndex})" title="タップして表示">🔒 タップして表示（秘密データ）</span>`;
+                    if (pendingMode === 'real' && !item.unlocked) {
+                        valDisplayHTML = `<span class="masked-val" onclick="toggleMask(${gIndex}, ${iIndex})" title="タップして表示">🔒 タップして表示（秘密データ）</span>`;
                     } else {
                         valDisplayHTML = `<input type="text" value="${item.val}" class="item-val" ${item.locked ? 'disabled' : ''}>`;
                     }
@@ -311,7 +358,6 @@
                 });
             });
 
-            // 新規ジャンル追加フォーム
             const addGenreBox = document.createElement('div');
             addGenreBox.style.cssText = "background: #1e293b; padding: 15px; border-radius: 8px; border: 1px dashed var(--border-color); margin-top: 15px;";
             addGenreBox.innerHTML = `
@@ -322,21 +368,21 @@
             container.appendChild(addGenreBox);
         }
 
-        function toggleMask(element, gIndex, iIndex) {
-            const genres = currentMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+        function toggleMask(gIndex, iIndex) {
+            const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
             genres[gIndex].items[iIndex].unlocked = true;
             renderMainContent();
         }
 
         function toggleLock(gIndex, iIndex) {
-            const genres = currentMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+            const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
             genres[gIndex].items[iIndex].locked = !genres[gIndex].items[iIndex].locked;
             renderMainContent();
         }
 
         function deleteItem(gIndex, iIndex) {
             if(confirm('この項目を削除してもよろしいですか？')) {
-                const genres = currentMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+                const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
                 genres[gIndex].items.splice(iIndex, 1);
                 renderMainContent();
             }
@@ -344,14 +390,14 @@
 
         function deleteGenre(gIndex) {
             if(confirm('このジャンルと中の項目をすべて削除しますか？')) {
-                const genres = currentMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+                const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
                 genres.splice(gIndex, 1);
                 renderMainContent();
             }
         }
 
         function addItem(gIndex) {
-            const genres = currentMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+            const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
             genres[gIndex].items.push({ title: '', val: '', locked: false, unlocked: false });
             renderMainContent();
         }
@@ -361,16 +407,14 @@
             const name = nameInput.value.trim();
             if(!name) return alert('ジャンル名を入力してください。');
 
-            const genres = currentMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+            const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
             genres.push({ name: name, items: [] });
             nameInput.value = '';
             renderMainContent();
         }
 
         function saveData() {
-            // DOMから入力内容を収集してデータに反映
-            const genres = currentMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
-            
+            const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
             genres.forEach((genre, gIndex) => {
                 const gBox = document.querySelectorAll('#content-area > .card')[gIndex];
                 if(gBox) {
@@ -384,7 +428,7 @@
                 }
             });
 
-            localStorage.setItem('pocket_fortress_v4', JSON.stringify(fortressData));
+            localStorage.setItem('pocket_fortress_v5', JSON.stringify(fortressData));
             alert('💾 要塞のデータを安全に保存しました！');
         }
 
@@ -401,7 +445,7 @@
 
         function clearAllData() {
             if(confirm('⚠️ 本当にすべての要塞データを完全消去しますか？この操作は元に戻せません。')) {
-                localStorage.removeItem('pocket_fortress_v4');
+                localStorage.removeItem('pocket_fortress_v5');
                 alert('すべてのデータを消去しました。');
                 location.reload();
             }
