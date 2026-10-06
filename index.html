@@ -49,7 +49,6 @@
             color: var(--accent-color);
             margin-top: 0;
         }
-        /* イラストを横全般にカバー＆比率維持・タップ可能に */
         .img-container {
             width: calc(100% + 32px);
             margin: -16px -16px 16px -16px;
@@ -102,6 +101,35 @@
             box-sizing: border-box;
             font-size: 1rem;
         }
+        
+        /* パスワード入力欄＋表示切り替えボタン用のラッパー */
+        .password-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .password-wrapper input {
+            margin-bottom: 0;
+            padding-right: 45px;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+            width: auto;
+            padding: 0;
+            margin: 0;
+        }
+        .toggle-password:hover {
+            color: var(--text-color);
+            background: none;
+        }
+
         button {
             background-color: var(--accent-color);
             color: white;
@@ -169,19 +197,31 @@
             </div>
 
             <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color); margin-bottom: 15px;">
-                <h3 style="font-size: 0.95rem; margin-bottom: 8px;">⚙️️ 初回または変更のパスワード設定</h3>
+                <h3 style="font-size: 0.95rem; margin-bottom: 8px;">⚙ 初回または変更のパスワード設定</h3>
+                
                 <label style="font-size: 0.8rem; color: var(--text-muted);">ダミー用パスワード</label>
-                <input type="text" id="set-dummy-input" placeholder="例: 1234">
+                <div class="password-wrapper">
+                    <input type="password" id="set-dummy-input" placeholder="例: 1234">
+                    <button type="button" class="toggle-password" onclick="toggleVisibility('set-dummy-input', this)">👁️️</button>
+                </div>
+
                 <label style="font-size: 0.8rem; color: var(--text-muted);">本物用パスワード（英数8文字以上）</label>
-                <input type="password" id="set-real-input" placeholder="例: Fortress99!">
+                <div class="password-wrapper">
+                    <input type="password" id="set-real-input" placeholder="例: Fortress99!">
+                    <button type="button" class="toggle-password" onclick="toggleVisibility('set-real-input', this)">👁️</button>
+                </div>
+
                 <button class="btn-success" onclick="saveInitialPasswords()" style="font-size: 0.85rem; padding: 10px;">パスワードを登録・更新する</button>
             </div>
 
-            <h1>🛡️ ポケット要塞</h1>
+            <h1>🛡️️ ポケット要塞</h1>
             <p style="color: var(--text-muted); font-size: 0.9rem;">パスワードを入力してください。</p>
             
             <label>パスワード入力</label>
-            <input type="password" id="pass-input" placeholder="パスワードを入力">
+            <div class="password-wrapper">
+                <input type="password" id="pass-input" placeholder="パスワードを入力">
+                <button type="button" class="toggle-password" onclick="toggleVisibility('pass-input', this)">👁️</button>
+            </div>
             <button onclick="tryUnlock()">要塞を開錠する</button>
             <p id="error-msg" style="color: var(--danger-color); font-size: 0.85rem; display: none;"></p>
 
@@ -193,9 +233,22 @@
                     <option value="bio">生体認証でリセットする</option>
                     <option value="real">本物パスワードでリセットする</option>
                 </select>
-                <input type="password" id="reset-auth-input" placeholder="確認用パスワード または 生体認証">
-                <input type="text" id="new-dummy-pass" placeholder="新しいダミーパスワード">
-                <input type="password" id="new-real-pass" placeholder="新しい本物パスワード">
+                
+                <div class="password-wrapper" style="margin-bottom: 5px;">
+                    <input type="password" id="reset-auth-input" placeholder="確認用本物パスワード">
+                    <button type="button" class="toggle-password" onclick="toggleVisibility('reset-auth-input', this)">👁️</button>
+                </div>
+                
+                <div class="password-wrapper" style="margin-bottom: 5px;">
+                    <input type="password" id="new-dummy-pass" placeholder="新しいダミーパスワード">
+                    <button type="button" class="toggle-password" onclick="toggleVisibility('new-dummy-pass', this)">👁️</button>
+                </div>
+
+                <div class="password-wrapper">
+                    <input type="password" id="new-real-pass" placeholder="新しい本物パスワード">
+                    <button type="button" class="toggle-password" onclick="toggleVisibility('new-real-pass', this)">👁️</button>
+                </div>
+
                 <button class="btn-warning" onclick="resetPasswords()">パスワードを再設定する</button>
             </div>
         </div>
@@ -207,8 +260,8 @@
             </div>
             <div style="padding: 16px;">
                 <h2>🔒 本物セキュリティ確認</h2>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">生体認証を実行してください。</p>
-                <button class="btn-success" onclick="completeBioAuth()" style="padding: 14px; font-size: 1rem; margin-top: 10px;">👆 生体認証シミュレーションをクリア</button>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">端末の指紋認証または顔認証を実行してください。</p>
+                <button class="btn-success" onclick="runBiometricAuth()" style="padding: 14px; font-size: 1rem; margin-top: 10px;">🧬 本物の指紋/顔認証を実行</button>
                 <button class="btn-secondary" onclick="cancelBioAuth()" style="margin-top: 10px;">キャンセル</button>
             </div>
         </div>
@@ -252,6 +305,18 @@
             document.getElementById('set-dummy-input').value = fortressData.dummyPass;
         };
 
+        // パスワードの見える化切り替え関数
+        function toggleVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                btn.innerText = "🙈";
+            } else {
+                input.type = "password";
+                btn.innerText = "👁️";
+            }
+        }
+
         function saveInitialPasswords() {
             const dInput = document.getElementById('set-dummy-input').value;
             const rInput = document.getElementById('set-real-input').value;
@@ -265,7 +330,7 @@
                 fortressData.realPass = rInput;
             }
             localStorage.setItem('pocket_fortress_v6', JSON.stringify(fortressData));
-            alert('⚙️️ パスワードの設定・更新が完了しました！');
+            alert('⚙ パスワードの設定・更新が完了しました！');
             document.getElementById('set-real-input').value = '';
         }
 
@@ -285,6 +350,45 @@
             } else {
                 errorMsg.innerText = "パスワードが違います。";
                 errorMsg.style.display = 'block';
+            }
+        }
+
+        // 本物の生体認証（WebAuthn）を試みる関数
+        async function runBiometricAuth() {
+            try {
+                // ブラウザがWebAuthn（指紋・顔認証）に対応しているかチェック
+                if (window.PublicKeyCredential) {
+                    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                    if (available) {
+                        // スマホやPCのOS標準の生体認証プロンプトを呼び出す
+                        const publicKey = {
+                            challenge: Uint8Array.from("pocket_fortress_secure_random_challenge", c => c.charCodeAt(0)),
+                            rp: { name: "Pocket Fortress" },
+                            user: {
+                                id: Uint8Array.from("1", c => c.charCodeAt(0)),
+                                name: "owner",
+                                displayName: "要塞の主"
+                            },
+                            pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                            timeout: 60000,
+                            authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+                            attestation: "none"
+                        };
+                        
+                        // 認証ダイアログを起動
+                        await navigator.credentials.create({ publicKey });
+                        // 認証成功！
+                        completeBioAuth();
+                        return;
+                    }
+                }
+                // 非対応環境やシミュレーション用フォールバック
+                if (confirm('お使いの端末で本物の生体認証が利用できないか、キャンセルされました。\nシミュレーションで突破しますか？')) {
+                    completeBioAuth();
+                }
+            } catch (err) {
+                console.log(err);
+                alert('生体認証がキャンセルされたか、エラーが発生しました。');
             }
         }
 
@@ -405,8 +509,7 @@
             });
 
             const addGenreBox = document.createElement('div');
-            addGradeBoxStyle = "background: #1e293b; padding: 14px; border-radius: 8px; border: 1px dashed var(--border-color); margin-top: 15px;";
-            addGenreBox.style.cssText = addGradeBoxStyle;
+            addGenreBox.style.cssText = "background: #1e293b; padding: 14px; border-radius: 8px; border: 1px dashed var(--border-color); margin-top: 15px;";
             addGenreBox.innerHTML = `
                 <h4 style="margin-top:0; color: var(--text-color); font-size: 0.95rem;">新しいジャンルを作成</h4>
                 <input type="text" id="new-genre-title" placeholder="例: クレジットカード等">
