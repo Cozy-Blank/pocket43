@@ -59,7 +59,6 @@
             margin-bottom: 20px;
         }
 
-        /* セキュリティ・パスワード設定エリア */
         .card {
             background-color: var(--card-bg);
             border: 1px solid rgba(168, 85, 247, 0.3);
@@ -105,7 +104,7 @@
             font-size: 0.95rem;
         }
 
-        /* 可愛げのある控えめな見える化トグルボタン */
+        /* 可愛げのある控えめな見える化トグルボタン（シンプルな鍵・秘密のノート風のニュアンス） */
         .eye-btn {
             position: absolute;
             right: 10px;
@@ -142,6 +141,7 @@
 <body>
 
     <div class="container">
+        <!-- 上部のタイトルとステータス表示を復活 -->
         <div class="header-area">
             <h1>機密の地下水脈</h1>
             <span class="badge">Secure Core</span>
@@ -150,14 +150,14 @@
 
         <!-- パスワード設定エリア -->
         <div class="card">
-            <div class="section-title">⚙️ パスワード構成設定</div>
+            <div class="section-title">⚙️ 初回または変更のパスワード設定</div>
 
-            <!-- ダミー用パスワード -->
+            <!-- ダミー用パスワード（本物用の上） -->
             <div class="input-group">
                 <label>ダミー用パスワード</label>
                 <div class="input-field-wrapper">
                     <input type="password" id="dummyPass" placeholder="ダミー用パスワードを入力">
-                    <button class="eye-btn" onclick="toggleVisibility('dummyPass', this)">👁‍🗨</button>
+                    <button class="eye-btn" onclick="toggleVisibility('dummyPass', this)">🔒</button>
                 </div>
             </div>
 
@@ -166,16 +166,7 @@
                 <label>本物用パスワード（英数8文字以上）</label>
                 <div class="input-field-wrapper">
                     <input type="password" id="realPass" placeholder="例: Fortress99!">
-                    <button class="eye-btn" onclick="toggleVisibility('realPass', this)">👁‍🗨</button>
-                </div>
-            </div>
-
-            <!-- 新しい本物パスワード -->
-            <div class="input-group">
-                <label>新しい本物パスワード</label>
-                <div class="input-field-wrapper">
-                    <input type="password" id="newRealPass" placeholder="新しい本物パスワード">
-                    <button class="eye-btn" onclick="toggleVisibility('newRealPass', this)">👁‍🗨</button>
+                    <button class="eye-btn" onclick="toggleVisibility('realPass', this)">🔒</button>
                 </div>
             </div>
 
@@ -184,24 +175,25 @@
                 <label>確認用本物パスワード</label>
                 <div class="input-field-wrapper">
                     <input type="password" id="confirmPass" placeholder="もう一度入力してください">
-                    <button class="eye-btn" onclick="toggleVisibility('confirmPass', this)">👁‍🗨</button>
+                    <button class="eye-btn" onclick="toggleVisibility('confirmPass', this)">🔒</button>
                 </div>
             </div>
 
-            <!-- 「パスワードを更新する」は削除し、リセットまたは登録系のアクションに一本化 -->
             <button class="action-btn" onclick="saveSettings()">パスワードを再設定する</button>
         </div>
     </div>
 
     <script>
-        // パスワードの表示・非表示をかわいく切り替える関数
+        // パスワードの表示・非表示をかわいく切り替える関数（アイコンも連動）
         function toggleVisibility(fieldId, btn) {
             const input = document.getElementById(fieldId);
             if (input.type === 'password') {
                 input.type = 'text';
-                btn.style.color = 'var(--accent-color)'; // 開いたときはアクセントカラーに
+                btn.innerText = '🔓'; // 開いたときは開錠アイコンに
+                btn.style.color = 'var(--accent-color)';
             } else {
                 input.type = 'password';
+                btn.innerText = '🔒'; // 閉じているときは施錠アイコンに
                 btn.style.color = 'var(--muted-text)';
             }
         }
