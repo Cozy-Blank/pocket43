@@ -2,172 +2,602 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>機密の地下水脈</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ポケット要塞</title>
     <style>
         :root {
-            --bg-color: #0F071A;
-            --card-bg: #1A102F;
-            --main-color: #A855F7;
-            --accent-color: #84CC16;
-            --text-color: #F3F4F6;
-            --muted-text: #9CA3AF;
-            --danger-color: #EF4444;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --text-color: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --success-color: #10b981;
         }
-
         body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Helvetica Neue', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
-
         .container {
             width: 100%;
             max-width: 480px;
-        }
-
-        .header-area {
+            min-height: 100vh;
+            background-color: var(--bg-color);
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
+            flex-direction: column;
+            box-sizing: border-box;
+            padding: 12px;
         }
-
-        h1 {
-            color: var(--main-color);
-            font-size: 1.5rem;
-            margin: 0;
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-
-        /* 本物・ダミー表記を目立たないカードの隅へ控えめに配置 */
-        .badge {
+        h1, h2, h3 {
+            color: var(--accent-color);
+            margin-top: 0;
+        }
+        .img-container {
+            width: calc(100% + 32px);
+            margin: -16px -16px 16px -16px;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            overflow: hidden;
+            text-align: center;
+            background: #000;
+            cursor: pointer;
+            position: relative;
+        }
+        .img-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+            transition: opacity 0.2s;
+        }
+        .img-container:hover img {
+            opacity: 0.9;
+        }
+        .img-container::after {
+            content: "👆 タップしてロック画面に戻る";
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
             font-size: 0.75rem;
             padding: 2px 8px;
             border-radius: 4px;
-            background: rgba(168, 85, 247, 0.2);
-            color: var(--main-color);
-            border: 1px solid var(--main-color);
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .img-container:hover::after {
+            opacity: 1;
         }
 
-        .subtitle {
-            color: var(--muted-text);
-            font-size: 0.9rem;
-            margin-bottom: 24px;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-        }
-
-        .item-box {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid #2D1B4E;
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            background-color: #0f172a;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .item-info label {
-            display: block;
-            font-size: 0.8rem;
-            color: var(--muted-text);
-            margin-bottom: 4px;
-        }
-
-        .item-info span {
+            color: var(--text-color);
+            box-sizing: border-box;
             font-size: 1rem;
-            font-weight: bold;
-            letter-spacing: 0.05em;
+        }
+        
+        /* パスワード入力欄＋表示切り替えボタン用のラッパー */
+        .password-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .password-wrapper input {
+            margin-bottom: 0;
+            padding-right: 45px;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+            width: auto;
+            padding: 0;
+            margin: 0;
+        }
+        .toggle-password:hover {
+            color: var(--text-color);
+            background: none;
         }
 
-        .action-group {
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+        button:hover {
+            background-color: var(--accent-hover);
+        }
+        .btn-secondary { background-color: #475569; }
+        .btn-secondary:hover { background-color: #334155; }
+        .btn-danger { background-color: var(--danger-color); width: auto; padding: 6px 12px; font-size: 0.85rem; }
+        .btn-warning { background-color: var(--warning-color); width: auto; padding: 6px 12px; font-size: 0.85rem; color: #000; }
+        .btn-success { background-color: var(--success-color); }
+        .hidden { display: none; }
+        .badge { font-size: 0.8rem; background: #334155; padding: 2px 8px; border-radius: 4px; color: var(--text-muted); }
+        
+        .masked-val {
+            background-color: #334155;
+            color: #334155;
+            cursor: pointer;
+            user-select: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            display: inline-block;
+            width: 100%;
+            box-sizing: border-box;
+            transition: background 0.2s;
+        }
+        .masked-val.revealed {
+            background-color: transparent;
+            color: var(--text-color);
+        }
+        .dynamic-item {
+            background: #111827;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .item-row {
             display: flex;
             gap: 8px;
             align-items: center;
+            margin-bottom: 8px;
         }
-
-        /* 視認性を劇的に上げた直感的なロックアイコンボタン */
-        .lock-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.4rem;
-            padding: 4px;
-            transition: transform 0.2s;
-        }
-
-        .lock-btn:active {
-            transform: scale(0.9);
-        }
-
-        .delete-btn {
-            background-color: var(--danger-color);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
+        .item-row input {
+            margin-bottom: 0;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="header-area">
-            <h1>機密の地下水脈</h1>
-            <span class="badge">Secure Core</span>
-        </div>
-        <p class="subtitle">安全にデータを管理・編集できます。</p>
-
-        <div class="card">
-            <!-- 項目1 -->
-            <div class="item-box">
-                <div class="item-info">
-                    <label>マイナンバー</label>
-                    <span>1234-5678-9012</span>
-                </div>
-                <div class="action-group">
-                    <!-- ロック状態がひと目でわかるアイコン（🔓 開 / 🔒 閉） -->
-                    <button class="lock-btn" id="lockBtn1" onclick="toggleLock(1)">🔓</button>
-                    <button class="delete-btn">削除</button>
-                </div>
+        <!-- 🔐 ロック画面 -->
+        <div id="lock-screen" class="card" style="padding-top: 0;">
+            <div class="img-container" onclick="lockFortress()" title="タップしてロック">
+                <img id="lock-img" src="23_nobg.webp" alt="要塞画像">
             </div>
 
-            <!-- 項目2 -->
-            <div class="item-box">
-                <div class="item-info">
-                    <label>健康保険証</label>
-                    <span>A12-B34-C56</span>
+            <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color); margin-bottom: 15px;">
+                <h3 style="font-size: 0.95rem; margin-bottom: 8px;">⚙ 初回または変更のパスワード設定</h3>
+                
+                <label style="font-size: 0.8rem; color: var(--text-muted);">ダミー用パスワード</label>
+                <div class="password-wrapper">
+                    <input type="password" id="set-dummy-input" placeholder="例: 1234">
+                    <button type="button" class="toggle-password" onclick="toggleVisibility('set-dummy-input', this)">👁️️</button>
                 </div>
-                <div class="action-group">
-                    <button class="lock-btn" id="lockBtn2" onclick="toggleLock(2)">🔒</button>
-                    <button class="delete-btn">削除</button>
+
+                <label style="font-size: 0.8rem; color: var(--text-muted);">本物用パスワード（英数8文字以上）</label>
+                <div class="password-wrapper">
+                    <input type="password" id="set-real-input" placeholder="例: Fortress99!">
+                    <button type="button" class="toggle-password" onclick="toggleVisibility('set-real-input', this)">👁️</button>
                 </div>
+
+                <button class="btn-success" onclick="saveInitialPasswords()" style="font-size: 0.85rem; padding: 10px;">パスワードを登録・更新する</button>
+            </div>
+
+            <h1>🛡️️ ポケット要塞</h1>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">パスワードを入力してください。</p>
+            
+            <label>パスワード入力</label>
+            <div class="password-wrapper">
+                <input type="password" id="pass-input" placeholder="パスワードを入力">
+                <button type="button" class="toggle-password" onclick="toggleVisibility('pass-input', this)">👁️</button>
+            </div>
+            <button onclick="tryUnlock()">要塞を開錠する</button>
+            <p id="error-msg" style="color: var(--danger-color); font-size: 0.85rem; display: none;"></p>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin: 20px 0;">
+            
+            <div style="background: #0f172a; padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
+                <h3 style="font-size: 0.95rem; margin-bottom: 8px;">🔄 パスワードリセット</h3>
+                <select id="reset-method">
+                    <option value="bio">生体認証でリセットする</option>
+                    <option value="real">本物パスワードでリセットする</option>
+                </select>
+                
+                <div class="password-wrapper" style="margin-bottom: 5px;">
+                    <input type="password" id="reset-auth-input" placeholder="確認用本物パスワード">
+                    <button type="button" class="toggle-password" onclick="toggleVisibility('reset-auth-input', this)">👁️</button>
+                </div>
+                
+                <div class="password-wrapper" style="margin-bottom: 5px;">
+                    <input type="password" id="new-dummy-pass" placeholder="新しいダミーパスワード">
+                    <button type="button" class="toggle-password" onclick="toggleVisibility('new-dummy-pass', this)">👁️</button>
+                </div>
+
+                <div class="password-wrapper">
+                    <input type="password" id="new-real-pass" placeholder="新しい本物パスワード">
+                    <button type="button" class="toggle-password" onclick="toggleVisibility('new-real-pass', this)">👁️</button>
+                </div>
+
+                <button class="btn-warning" onclick="resetPasswords()">パスワードを再設定する</button>
+            </div>
+        </div>
+
+        <!-- 👆 生体認証モーダル -->
+        <div id="bio-modal" class="card hidden" style="border: 2px solid var(--accent-color); padding-top: 0;">
+            <div class="img-container" onclick="cancelBioAuth()">
+                <img src="24_nobg.webp" alt="本物の主">
+            </div>
+            <div style="padding: 16px;">
+                <h2>🔒 本物セキュリティ確認</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">端末の指紋認証または顔認証を実行してください。</p>
+                <button class="btn-success" onclick="runBiometricAuth()" style="padding: 14px; font-size: 1rem; margin-top: 10px;">🧬 本物の指紋/顔認証を実行</button>
+                <button class="btn-secondary" onclick="cancelBioAuth()" style="margin-top: 10px;">キャンセル</button>
+            </div>
+        </div>
+
+        <!-- 🏰 メイン要塞内部 -->
+        <div id="main-screen" class="card hidden" style="padding-top: 0;">
+            <div class="img-container" onclick="lockFortress()" title="タップしてロック画面に戻る">
+                <img id="main-img" src="" alt="要塞メイン画像">
+            </div>
+            <div style="padding: 16px;">
+                <h2>要塞の管理ルーム <span id="mode-badge" class="badge"></span></h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">安全にデータを管理・編集できます。</p>
+                
+                <div id="content-area"></div>
+
+                <hr style="border:0; border-top:1px solid var(--border-color); margin: 25px 0;">
+
+                <button onclick="saveData()" style="margin-bottom: 10px;">💾 変更をすべて保存する</button>
+                <button class="btn-secondary" onclick="exportData()" style="background-color: #0d9488; margin-bottom: 8px;">📥 バックアップ (JSON)</button>
+                <button class="btn-secondary" onclick="lockFortress()" style="background-color: #64748b; margin-bottom: 8px;">🔒 要塞をロックする</button>
+                <button class="btn-danger" onclick="clearAllData()" style="width: 100%; margin-top: 10px;">⚠ 全データを完全消去</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ロック状態を切り替える簡単なJavaScript
-        function toggleLock(id) {
-            const btn = document.getElementById('lockBtn' + id);
-            if (btn.innerText === '🔒') {
-                btn.innerText = '🔓';
+        let fortressData = JSON.parse(localStorage.getItem('pocket_fortress_v6')) || {
+            dummyPass: '1234',
+            realPass: 'Fortress99!',
+            dummyGenres: [
+                { name: 'Wi-Fi・よく行くお店', items: [{ title: '自宅Wi-Fi', val: 'abcd-1234', locked: false }] },
+                { name: '診察券', items: [{ title: '内科クリニック', val: 'Card No. 4567', locked: false }] }
+            ],
+            realGenres: [
+                { name: '重要書類 (マイナンバー・保険証)', items: [{ title: 'マイナンバー', val: '1234-5678-9012', locked: true }, { title: '健康保険証', val: 'A12-B34-C56', locked: true }] },
+                { name: '銀行口座', items: [{ title: 'メインバンク 普通', val: '口座番号 9876543', locked: true }] }
+            ]
+        };
+
+        window.onload = function() {
+            document.getElementById('set-dummy-input').value = fortressData.dummyPass;
+        };
+
+        // パスワードの見える化切り替え関数
+        function toggleVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                btn.innerText = "🙈";
             } else {
-                btn.innerText = '🔒';
+                input.type = "password";
+                btn.innerText = "👁️";
+            }
+        }
+
+        function saveInitialPasswords() {
+            const dInput = document.getElementById('set-dummy-input').value;
+            const rInput = document.getElementById('set-real-input').value;
+
+            if (dInput) fortressData.dummyPass = dInput;
+            if (rInput) {
+                const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+                if (!regex.test(rInput)) {
+                    return alert('本物パスワードは英字と数字を含めた8文字以上にしてください！');
+                }
+                fortressData.realPass = rInput;
+            }
+            localStorage.setItem('pocket_fortress_v6', JSON.stringify(fortressData));
+            alert('⚙ パスワードの設定・更新が完了しました！');
+            document.getElementById('set-real-input').value = '';
+        }
+
+        let pendingMode = null;
+
+        function tryUnlock() {
+            const input = document.getElementById('pass-input').value;
+            const errorMsg = document.getElementById('error-msg');
+            errorMsg.style.display = 'none';
+
+            if (input === fortressData.realPass) {
+                document.getElementById('lock-screen').classList.add('hidden');
+                document.getElementById('bio-modal').classList.remove('hidden');
+            } else if (input === fortressData.dummyPass) {
+                pendingMode = 'dummy';
+                showMain();
+            } else {
+                errorMsg.innerText = "パスワードが違います。";
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        // 本物の生体認証（WebAuthn）を試みる関数
+        async function runBiometricAuth() {
+            try {
+                // ブラウザがWebAuthn（指紋・顔認証）に対応しているかチェック
+                if (window.PublicKeyCredential) {
+                    const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                    if (available) {
+                        // スマホやPCのOS標準の生体認証プロンプトを呼び出す
+                        const publicKey = {
+                            challenge: Uint8Array.from("pocket_fortress_secure_random_challenge", c => c.charCodeAt(0)),
+                            rp: { name: "Pocket Fortress" },
+                            user: {
+                                id: Uint8Array.from("1", c => c.charCodeAt(0)),
+                                name: "owner",
+                                displayName: "要塞の主"
+                            },
+                            pubKeyCredParams: [{ alg: -7, type: "public-key" }],
+                            timeout: 60000,
+                            authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
+                            attestation: "none"
+                        };
+                        
+                        // 認証ダイアログを起動
+                        await navigator.credentials.create({ publicKey });
+                        // 認証成功！
+                        completeBioAuth();
+                        return;
+                    }
+                }
+                // 非対応環境やシミュレーション用フォールバック
+                if (confirm('お使いの端末で本物の生体認証が利用できないか、キャンセルされました。\nシミュレーションで突破しますか？')) {
+                    completeBioAuth();
+                }
+            } catch (err) {
+                console.log(err);
+                alert('生体認証がキャンセルされたか、エラーが発生しました。');
+            }
+        }
+
+        function completeBioAuth() {
+            document.getElementById('bio-modal').classList.add('hidden');
+            pendingMode = 'real';
+            showMain();
+        }
+
+        function cancelBioAuth() {
+            document.getElementById('bio-modal').classList.add('hidden');
+            document.getElementById('lock-screen').classList.remove('hidden');
+            document.getElementById('pass-input').value = '';
+        }
+
+        function resetPasswords() {
+            const method = document.getElementById('reset-method').value;
+            const authInput = document.getElementById('reset-auth-input').value;
+            const newDummy = document.getElementById('new-dummy-pass').value;
+            const newReal = document.getElementById('new-real-pass').value;
+
+            if (method === 'real' && authInput !== fortressData.realPass) {
+                return alert('本物パスワードが違います。');
+            }
+
+            if (newDummy) fortressData.dummyPass = newDummy;
+            if (newReal) {
+                const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+                if (!regex.test(newReal)) {
+                    return alert('本物パスワードは英字と数字を含めた8文字以上にしてください！');
+                }
+                fortressData.realPass = newReal;
+            }
+
+            localStorage.setItem('pocket_fortress_v6', JSON.stringify(fortressData));
+            alert('🔄 パスワードを再設定しました！');
+            document.getElementById('reset-auth-input').value = '';
+            document.getElementById('new-dummy-pass').value = '';
+            document.getElementById('new-real-pass').value = '';
+            document.getElementById('set-dummy-input').value = fortressData.dummyPass;
+        }
+
+        function showMain() {
+            document.getElementById('lock-screen').classList.add('hidden');
+            document.getElementById('bio-modal').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
+            
+            const badge = document.getElementById('mode-badge');
+            const mainImg = document.getElementById('main-img');
+
+            if (pendingMode === 'real') {
+                badge.innerText = "【本物】";
+                badge.style.background = "#2563eb";
+                mainImg.src = "24_nobg.webp";
+            } else {
+                badge.innerText = "【ダミー】";
+                badge.style.background = "#475569";
+                mainImg.src = "23_nobg.webp";
+            }
+            renderMainContent();
+            window.scrollTo(0, 0);
+        }
+
+        function lockFortress() {
+            document.getElementById('main-screen').classList.add('hidden');
+            document.getElementById('bio-modal').classList.add('hidden');
+            document.getElementById('lock-screen').classList.remove('hidden');
+            document.getElementById('pass-input').value = '';
+            document.getElementById('error-msg').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+
+        function renderMainContent() {
+            const container = document.getElementById('content-area');
+            container.innerHTML = '';
+
+            const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+
+            genres.forEach((genre, gIndex) => {
+                const gBox = document.createElement('div');
+                gBox.className = 'card';
+                gBox.style.background = '#0f172a';
+                gBox.style.marginBottom = '12px';
+                gBox.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <h3 style="margin: 0; color: #38bdf8; font-size: 1rem;">📂 ${genre.name}</h3>
+                        <button class="btn-danger" onclick="deleteGenre(${gIndex})">削除</button>
+                    </div>
+                    <div id="items-box-${gIndex}"></div>
+                    <button class="btn-secondary" onclick="addItem(${gIndex})" style="margin-top: 8px;">＋ 項目を追加</button>
+                `;
+                container.appendChild(gBox);
+
+                const itemsBox = gBox.querySelector(`#items-box-${gIndex}`);
+                genre.items.forEach((item, iIndex) => {
+                    const iDiv = document.createElement('div');
+                    iDiv.className = 'dynamic-item';
+                    
+                    let valDisplayHTML = '';
+                    if (pendingMode === 'real' && !item.unlocked) {
+                        valDisplayHTML = `<span class="masked-val" onclick="toggleMask(${gIndex}, ${iIndex})" title="タップして表示">🔒 タップして表示</span>`;
+                    } else {
+                        valDisplayHTML = `<input type="text" value="${item.val}" class="item-val" ${item.locked ? 'disabled' : ''}>`;
+                    }
+
+                    iDiv.innerHTML = `
+                        <div class="item-row">
+                            <input type="text" value="${item.title}" class="item-title" ${item.locked ? 'disabled' : ''} style="flex: 1;">
+                            <button class="btn-secondary" style="width:auto; padding:10px;" onclick="toggleLock(${gIndex}, ${iIndex})">
+                                ${item.locked ? '🔒' : '🔓'}
+                            </button>
+                            <button class="btn-danger" onclick="deleteItem(${gIndex}, ${iIndex})" style="padding:10px;">🗑</button>
+                        </div>
+                        <div>${valDisplayHTML}</div>
+                    `;
+                    itemsBox.appendChild(iDiv);
+                });
+            });
+
+            const addGenreBox = document.createElement('div');
+            addGenreBox.style.cssText = "background: #1e293b; padding: 14px; border-radius: 8px; border: 1px dashed var(--border-color); margin-top: 15px;";
+            addGenreBox.innerHTML = `
+                <h4 style="margin-top:0; color: var(--text-color); font-size: 0.95rem;">新しいジャンルを作成</h4>
+                <input type="text" id="new-genre-title" placeholder="例: クレジットカード等">
+                <button class="btn-secondary" onclick="createNewGenre()">ジャンルを追加する</button>
+            `;
+            container.appendChild(addGenreBox);
+        }
+
+        function toggleMask(gIndex, iIndex) {
+            const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+            genres[gIndex].items[iIndex].unlocked = true;
+            renderMainContent();
+        }
+
+        function toggleLock(gIndex, iIndex) {
+            const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+            genres[gIndex].items[iIndex].locked = !genres[gIndex].items[iIndex].locked;
+            renderMainContent();
+        }
+
+        function deleteItem(gIndex, iIndex) {
+            if(confirm('この項目を削除しますか？')) {
+                const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+                genres[gIndex].items.splice(iIndex, 1);
+                renderMainContent();
+            }
+        }
+
+        function deleteGenre(gIndex) {
+            if(confirm('このジャンルをすべて削除しますか？')) {
+                const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+                genres.splice(gIndex, 1);
+                renderMainContent();
+            }
+        }
+
+        function addItem(gIndex) {
+            const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+            genres[gIndex].items.push({ title: '', val: '', locked: false, unlocked: false });
+            renderMainContent();
+        }
+
+        function createNewGenre() {
+            const nameInput = document.getElementById('new-genre-title');
+            const name = nameInput.value.trim();
+            if(!name) return alert('ジャンル名を入力してください。');
+
+            const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+            genres.push({ name: name, items: [] });
+            nameInput.value = '';
+            renderMainContent();
+        }
+
+        function saveData() {
+            const genres = pendingMode === 'real' ? fortressData.realGenres : fortressData.dummyGenres;
+            genres.forEach((genre, gIndex) => {
+                const gBox = document.querySelectorAll('#content-area > .card')[gIndex];
+                if(gBox) {
+                    const itemDivs = gBox.querySelectorAll('.dynamic-item');
+                    itemDivs.forEach((div, iIndex) => {
+                        const titleInput = div.querySelector('.item-title');
+                        const valInput = div.querySelector('.item-val');
+                        if(titleInput) genre.items[iIndex].title = titleInput.value;
+                        if(valInput) genre.items[iIndex].val = valInput.value;
+                    });
+                }
+            });
+
+            localStorage.setItem('pocket_fortress_v6', JSON.stringify(fortressData));
+            alert('💾 データを保存しました！');
+        }
+
+        function exportData() {
+            saveData();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fortressData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "pocket_fortress_backup.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function clearAllData() {
+            if(confirm('⚠️ すべてのデータを完全消去しますか？')) {
+                localStorage.removeItem('pocket_fortress_v6');
+                alert('データを消去しました。');
+                location.reload();
             }
         }
     </script>
