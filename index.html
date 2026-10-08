@@ -44,6 +44,7 @@
             margin: 0;
         }
 
+        /* 本物・ダミー表記を目立たないカードの隅へ控えめに配置 */
         .badge {
             font-size: 0.75rem;
             padding: 2px 8px;
@@ -56,40 +57,7 @@
         .subtitle {
             color: var(--muted-text);
             font-size: 0.9rem;
-            margin-bottom: 20px;
-        }
-
-        /* 主あり・主なし切り替えバナーエリア */
-        .banner-box {
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(132, 204, 22, 0.1));
-            border: 1px solid rgba(168, 85, 247, 0.4);
-            border-radius: 10px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .banner-text {
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
-
-        .banner-btn {
-            background-color: var(--main-color);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: bold;
-            transition: opacity 0.2s;
-        }
-
-        .banner-btn:hover {
-            opacity: 0.9;
+            margin-bottom: 24px;
         }
 
         .card {
@@ -98,159 +66,109 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-            margin-bottom: 20px;
         }
 
-        .section-title {
-            font-size: 1rem;
-            color: var(--main-color);
+        .item-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #2D1B4E;
+            border-radius: 8px;
+            padding: 12px 16px;
             margin-bottom: 16px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 6px;
         }
 
-        .input-group {
-            margin-bottom: 16px;
-        }
-
-        .input-group label {
+        .item-info label {
             display: block;
             font-size: 0.8rem;
             color: var(--muted-text);
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
 
-        .input-field-wrapper {
-            position: relative;
+        .item-info span {
+            font-size: 1rem;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+        }
+
+        .action-group {
             display: flex;
+            gap: 8px;
             align-items: center;
         }
 
-        .input-field-wrapper input {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid #2D1B4E;
-            border-radius: 6px;
-            padding: 10px 40px 10px 12px;
-            color: var(--text-color);
-            font-size: 0.95rem;
-        }
-
-        /* 可変の可愛い鍵アイコン（見える化トグル） */
-        .eye-btn {
-            position: absolute;
-            right: 10px;
+        /* 視認性を劇的に上げた直感的なロックアイコンボタン */
+        .lock-btn {
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 1.1rem;
-            color: var(--muted-text);
-            transition: color 0.2s;
+            font-size: 1.4rem;
+            padding: 4px;
+            transition: transform 0.2s;
         }
 
-        .eye-btn:hover {
-            color: var(--main-color);
+        .lock-btn:active {
+            transform: scale(0.9);
         }
 
-        .action-btn {
-            background-color: var(--main-color);
+        .delete-btn {
+            background-color: var(--danger-color);
             color: white;
             border: none;
-            width: 100%;
-            padding: 12px;
+            padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 0.95rem;
-            transition: opacity 0.2s;
-        }
-
-        .action-btn:hover {
-            opacity: 0.9;
+            font-size: 0.85rem;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- 上部のタイトルとステータス -->
         <div class="header-area">
             <h1>機密の地下水脈</h1>
             <span class="badge">Secure Core</span>
         </div>
-        <p class="subtitle">パスワードとセキュリティの管理を行います。</p>
+        <p class="subtitle">安全にデータを管理・編集できます。</p>
 
-        <!-- 主あり・主なし切り替えバナーを復活 -->
-        <div class="banner-box">
-            <span class="banner-text" id="statusBannerText">現在の状態: 主ありモード</span>
-            <button class="banner-btn" onclick="toggleMainStatus()">切り替える</button>
-        </div>
-
-        <!-- パスワード設定エリア -->
         <div class="card">
-            <div class="section-title">⚙️ 初回または変更のパスワード設定</div>
-
-            <!-- ダミー用パスワード -->
-            <div class="input-group">
-                <label>ダミー用パスワード</label>
-                <div class="input-field-wrapper">
-                    <input type="password" id="dummyPass" placeholder="ダミー用パスワードを入力">
-                    <button class="eye-btn" onclick="toggleVisibility('dummyPass', this)">🔒</button>
+            <!-- 項目1 -->
+            <div class="item-box">
+                <div class="item-info">
+                    <label>マイナンバー</label>
+                    <span>1234-5678-9012</span>
+                </div>
+                <div class="action-group">
+                    <!-- ロック状態がひと目でわかるアイコン（🔓 開 / 🔒 閉） -->
+                    <button class="lock-btn" id="lockBtn1" onclick="toggleLock(1)">🔓</button>
+                    <button class="delete-btn">削除</button>
                 </div>
             </div>
 
-            <!-- 本物用パスワード -->
-            <div class="input-group">
-                <label>本物用パスワード（英数8文字以上）</label>
-                <div class="input-field-wrapper">
-                    <input type="password" id="realPass" placeholder="例: Fortress99!">
-                    <button class="eye-btn" onclick="toggleVisibility('realPass', this)">🔒</button>
+            <!-- 項目2 -->
+            <div class="item-box">
+                <div class="item-info">
+                    <label>健康保険証</label>
+                    <span>A12-B34-C56</span>
+                </div>
+                <div class="action-group">
+                    <button class="lock-btn" id="lockBtn2" onclick="toggleLock(2)">🔒</button>
+                    <button class="delete-btn">削除</button>
                 </div>
             </div>
-
-            <!-- 確認用パスワード -->
-            <div class="input-group">
-                <label>確認用本物パスワード</label>
-                <div class="input-field-wrapper">
-                    <input type="password" id="confirmPass" placeholder="もう一度入力してください">
-                    <button class="eye-btn" onclick="toggleVisibility('confirmPass', this)">🔒</button>
-                </div>
-            </div>
-
-            <button class="action-btn" onclick="saveSettings()">パスワードを再設定する</button>
         </div>
     </div>
 
     <script>
-        // パスワードの表示・非表示を切り替える関数
-        function toggleVisibility(fieldId, btn) {
-            const input = document.getElementById(fieldId);
-            if (input.type === 'password') {
-                input.type = 'text';
+        // ロック状態を切り替える簡単なJavaScript
+        function toggleLock(id) {
+            const btn = document.getElementById('lockBtn' + id);
+            if (btn.innerText === '🔒') {
                 btn.innerText = '🔓';
-                btn.style.color = 'var(--accent-color)';
             } else {
-                input.type = 'password';
                 btn.innerText = '🔒';
-                btn.style.color = 'var(--muted-text)';
             }
-        }
-
-        // 主あり・主なしバナーの状態を切り替える関数
-        let isMainMode = true;
-        function toggleMainStatus() {
-            isMainMode = !isMainMode;
-            const bannerText = document.getElementById('statusBannerText');
-            if (isMainMode) {
-                bannerText.innerText = '現在の状態: 主ありモード';
-            } else {
-                bannerText.innerText = '現在の状態: 主なしモード';
-            }
-        }
-
-        function saveSettings() {
-            alert('パスワード設定が保存されました！');
         }
     </script>
 </body>
