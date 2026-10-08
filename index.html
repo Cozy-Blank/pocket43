@@ -59,6 +59,39 @@
             margin-bottom: 20px;
         }
 
+        /* 主あり・主なし切り替えバナーエリア */
+        .banner-box {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(132, 204, 22, 0.1));
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .banner-text {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .banner-btn {
+            background-color: var(--main-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .banner-btn:hover {
+            opacity: 0.9;
+        }
+
         .card {
             background-color: var(--card-bg);
             border: 1px solid rgba(168, 85, 247, 0.3);
@@ -104,7 +137,7 @@
             font-size: 0.95rem;
         }
 
-        /* 可愛げのある控えめな見える化トグルボタン（シンプルな鍵・秘密のノート風のニュアンス） */
+        /* 可変の可愛い鍵アイコン（見える化トグル） */
         .eye-btn {
             position: absolute;
             right: 10px;
@@ -141,18 +174,24 @@
 <body>
 
     <div class="container">
-        <!-- 上部のタイトルとステータス表示を復活 -->
+        <!-- 上部のタイトルとステータス -->
         <div class="header-area">
             <h1>機密の地下水脈</h1>
             <span class="badge">Secure Core</span>
         </div>
         <p class="subtitle">パスワードとセキュリティの管理を行います。</p>
 
+        <!-- 主あり・主なし切り替えバナーを復活 -->
+        <div class="banner-box">
+            <span class="banner-text" id="statusBannerText">現在の状態: 主ありモード</span>
+            <button class="banner-btn" onclick="toggleMainStatus()">切り替える</button>
+        </div>
+
         <!-- パスワード設定エリア -->
         <div class="card">
             <div class="section-title">⚙️ 初回または変更のパスワード設定</div>
 
-            <!-- ダミー用パスワード（本物用の上） -->
+            <!-- ダミー用パスワード -->
             <div class="input-group">
                 <label>ダミー用パスワード</label>
                 <div class="input-field-wrapper">
@@ -184,17 +223,29 @@
     </div>
 
     <script>
-        // パスワードの表示・非表示をかわいく切り替える関数（アイコンも連動）
+        // パスワードの表示・非表示を切り替える関数
         function toggleVisibility(fieldId, btn) {
             const input = document.getElementById(fieldId);
             if (input.type === 'password') {
                 input.type = 'text';
-                btn.innerText = '🔓'; // 開いたときは開錠アイコンに
+                btn.innerText = '🔓';
                 btn.style.color = 'var(--accent-color)';
             } else {
                 input.type = 'password';
-                btn.innerText = '🔒'; // 閉じているときは施錠アイコンに
+                btn.innerText = '🔒';
                 btn.style.color = 'var(--muted-text)';
+            }
+        }
+
+        // 主あり・主なしバナーの状態を切り替える関数
+        let isMainMode = true;
+        function toggleMainStatus() {
+            isMainMode = !isMainMode;
+            const bannerText = document.getElementById('statusBannerText');
+            if (isMainMode) {
+                bannerText.innerText = '現在の状態: 主ありモード';
+            } else {
+                bannerText.innerText = '現在の状態: 主なしモード';
             }
         }
 
